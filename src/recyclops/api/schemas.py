@@ -1,9 +1,10 @@
 """The API's request and response shapes, and how domain results map onto them."""
 
 from datetime import date, datetime
-from typing import Annotated
+from enum import StrEnum
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 from recyclops.ai.explain import Explanations, decision_key, home_key, swap_key
 from recyclops.ai.templates import decision_impact, home_impact, swap_impact
@@ -35,6 +36,28 @@ class Location(_In):
 class PlanRequest(_In):
     location: Location
     household: Household
+
+
+class AskForm(_In):
+    """The question as a form: used when the AI isn't available or couldn't read the typed question."""
+    member_id: str
+    day: Literal["today", "tomorrow"] = "today"
+    activity: Activity
+
+
+class AskRequest(_In):
+    location: Location
+    household: Household
+    question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=200)] | None = None
+    form: AskForm | None = None
+
+    @model_validator(mode="after")
+    def _question_or_form(self) -> "AskRequest":
+        if (self.question is None) == (self.form is None):
+            raise ValueError("Send either a question or the form, not both.")
+        if self.form and self.form.member_id not in {m.id for m in self.household.members}:
+            raise ValueError("The form names a member who isn't in the household.")
+        return self
 
 
 class StationOut(BaseModel):
@@ -161,6 +184,35 @@ class HomeAdviceOut(BaseModel):
     def of(cls, a: HomeAdvice, why: str, home: Home) -> "HomeAdviceOut":
         return cls(action=a.action, at=a.at, indoor_pm_cut_pct=a.indoor_pm_cut_pct,
                    purifier_cadr_m3h=a.purifier_cadr_m3h, why=why, impact=home_impact(a, home))
+
+
+class Verdict(StrEnum):
+    YES = "yes"
+    BETTER_TIME = "better_time"
+    SHORTER = "shorter"
+    INDOORS = "indoors"
+    UNKNOWN = "unknown"
+
+
+VERDICTS = {Action.KEEP: Verdict.YES, Action.MOVE: Verdict.BETTER_TIME, Action.SHORTEN: Verdict.SHORTER,
+            Action.INDOOR: Verdict.INDOORS, Action.NO_DATA: Verdict.UNKNOWN}
+
+
+class AskedOut(BaseModel):
+    """What the app understood the question to be: shown back, so a misreading is visible."""
+    member_id: str
+    name: str
+    day: date
+    activity: Activity
+
+
+class AskOut(BaseModel):
+    air: AirOut
+    needs_form: bool   # the question couldn't be read: show the form
+    ai_used: bool      # the AI read the question (the decision is always code's)
+    asked: AskedOut | None = None
+    verdict: Verdict | None = None
+    decision: DecisionOut | None = None
 
 
 class PlanOut(BaseModel):

@@ -5,7 +5,7 @@ from datetime import date
 
 from recyclops.domain.forecast import DayWindows, Forecast, day_windows
 from recyclops.domain.home import HomeAdvice, home_actions
-from recyclops.domain.household import Home, Household, Member
+from recyclops.domain.household import Activity, Home, Household, Member
 from recyclops.domain.impact import TransportSwap, indoor_exposure_cut_pct, transport_swaps
 from recyclops.domain.rules import Action, Decision, Mask, commute_mask, decide_activity
 
@@ -31,8 +31,10 @@ class DayPlan:
     home: tuple[HomeAdvice, ...]
 
 
-def _with_indoor_impact(decision: Decision, member: Member, home: Home) -> Decision:
-    """An indoor swap's benefit depends on the home (is there a purifier?), so it's added here."""
+def decide(member: Member, activity: Activity, home: Home, forecast: Forecast, windows: DayWindows | None,
+           day: date) -> Decision:
+    """The rules' decision, plus an indoor swap's benefit, which depends on the home (is there a purifier?)."""
+    decision = decide_activity(member, activity, forecast, windows, day)
     if decision.action is not Action.INDOOR:
         return decision
     cut = indoor_exposure_cut_pct(member.age, decision.activity.intensity, home.has_purifier)
@@ -41,9 +43,8 @@ def _with_indoor_impact(decision: Decision, member: Member, home: Home) -> Decis
 
 def _member_plan(member: Member, household: Household, forecast: Forecast, windows: DayWindows | None,
                  day: date, city_has_metro: bool) -> MemberPlan:
-    decisions = tuple(
-        _with_indoor_impact(decide_activity(member, activity, forecast, windows, day), member, household.home)
-        for activity in member.activities)
+    decisions = tuple(decide(member, activity, household.home, forecast, windows, day)
+                      for activity in member.activities)
     commute = None
     if member.commute:
         commute = CommutePlan(mask=commute_mask(member.commute, forecast, day),

@@ -9,10 +9,11 @@ ranges at their shared edges and closes the top one, as common NAQI calculators 
 readings inside a range it gives the same result as the published table.
 """
 
-import math
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
+
+from recyclops.domain.rounding import round_half_up
 
 
 class Pollutant(StrEnum):
@@ -46,11 +47,6 @@ _BAND_TOPS = (
 MIN_HOURS_FOR_24H = 16
 
 
-def _round_half_up(value: float) -> int:
-    """Python's round() rounds halves to even (round(52.5) == 52); an index reads 0.5 as up."""
-    return math.floor(value + 0.5)
-
-
 def sub_index(pollutant: Pollutant, concentration: float) -> int:
     """The pollutant's index, by linear interpolation between the two breakpoints around it."""
     if concentration < 0:
@@ -61,7 +57,7 @@ def sub_index(pollutant: Pollutant, concentration: float) -> int:
     upper = next(i for i, point in enumerate(points) if concentration <= point and i > 0)
     c_lo, c_hi = points[upper - 1], points[upper]
     i_lo, i_hi = _INDEX_POINTS[upper - 1], _INDEX_POINTS[upper]
-    return _round_half_up(i_lo + (concentration - c_lo) * (i_hi - i_lo) / (c_hi - c_lo))
+    return round_half_up(i_lo + (concentration - c_lo) * (i_hi - i_lo) / (c_hi - c_lo))
 
 
 def band_for(aqi: int) -> Band:

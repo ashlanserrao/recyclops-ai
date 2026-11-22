@@ -1,0 +1,43 @@
+# The backend is the `recyclops` package in src/. Install it with its pinned dependencies:
+#   pip install -r requirements-dev.txt   (development: the package, editable, plus test and lint tools)
+#   pip install .                         (API-only hosts such as Render: the site is on Vercel)
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "recyclops"
+version = "0.1.0"
+description = "Household air-quality planner: code computes AQI, windows and advice from live data; AI explains it."
+requires-python = ">=3.12"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+# One list of pins, shared with hosts that install from requirements.txt.
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["frontend", "venv"]
+
+[tool.ruff.lint]
+# pyflakes, pycodestyle, bugbear, pyupgrade, isort, simplify, return/raise hygiene, naming.
+select = ["F", "E", "W", "B", "UP", "I", "SIM", "RET", "N"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency injection is declared as a default argument by design.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src", "scripts"]
+plugins = ["pydantic.mypy"]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

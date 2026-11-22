@@ -1,0 +1,22 @@
+# Render blueprint for the API (New > Blueprint, then pick this repo). The website itself is on
+# Vercel (frontend/vercel.json), which forwards /api/* here, so the browser sees one origin.
+services:
+  - type: web
+    name: recyclops-ai-api
+    runtime: python
+    plan: free
+    buildCommand: pip install .
+    # Render's proxy is the only way in, so its X-Forwarded-For header is trusted: per-IP rate
+    # limits see the visitor's IP, and HSTS is sent because the visitor used HTTPS.
+    startCommand: uvicorn recyclops.api.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      # Asked for when the blueprint is created; never committed.
+      - key: OPENAQ_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false

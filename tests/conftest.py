@@ -5,6 +5,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
+from recyclops.api import dependencies
 from recyclops.api.limits import RATE_LIMITERS
 from recyclops.api.main import app
 
@@ -39,6 +40,13 @@ def no_network(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(socket.socket, "connect_ex", guarded(socket.socket.connect_ex, lambda _s, a, *__: _host(a)))
     monkeypatch.setattr(socket, "create_connection", guarded(socket.create_connection, lambda a, *__: _host(a)))
     monkeypatch.setattr(socket, "getaddrinfo", guarded(socket.getaddrinfo, lambda h, *__: str(h)))
+
+
+@pytest.fixture(autouse=True)
+def no_real_ai(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The app's AI chain has no providers in tests, even with keys in .env: templates answer."""
+    monkeypatch.setattr(dependencies.ai, "providers", [])
+    dependencies.ai._cache.clear()
 
 
 @pytest.fixture

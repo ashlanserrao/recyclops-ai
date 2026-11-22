@@ -5,13 +5,15 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from recyclops.ai.explain import Explanations, decision_key, home_key, swap_key
+from recyclops.ai.templates import decision_impact, home_impact, swap_impact
 from recyclops.data.models import AirSnapshot, DataStatus
 from recyclops.domain.aqi import Band, Pollutant
 from recyclops.domain.cities import City
 from recyclops.domain.factors import EPA_EFH, IGHGP_RAIL, IGHGP_ROAD, PURIFIER_REDUCTION
 from recyclops.domain.forecast import Window
 from recyclops.domain.home import HomeAction, HomeAdvice
-from recyclops.domain.household import Activity, Household
+from recyclops.domain.household import Activity, Home, Household
 from recyclops.domain.impact import Alternative, TransportSwap
 from recyclops.domain.plan import DayPlan, MemberPlan
 from recyclops.domain.rounding import round_half_up
@@ -102,12 +104,14 @@ class DecisionOut(BaseModel):
     mask: Mask
     exposure_cut_pct: int | None
     reasons: list[Reason]
+    why: str               # the reasoning, in words (AI-personalised or template)
+    impact: str | None     # the numbers, in words (always from code)
 
     @classmethod
-    def of(cls, d: Decision) -> "DecisionOut":
+    def of(cls, d: Decision, why: str, has_purifier: bool) -> "DecisionOut":
         return cls(activity=d.activity, action=d.action, band_now=d.band_now, new_start=d.new_start,
                    new_duration_min=d.new_duration_min, mask=d.mask, exposure_cut_pct=d.exposure_cut_pct,
-                   reasons=list(d.reasons))
+                   reasons=list(d.reasons), why=why, impact=decision_impact(d, has_purifier))
 
 
 class SwapOut(BaseModel):
@@ -115,11 +119,13 @@ class SwapOut(BaseModel):
     weekly_km: float
     co2_kg_saved_per_week: float
     vehicle_km_off_road_per_week: float
+    why: str
+    impact: str
 
     @classmethod
-    def of(cls, s: TransportSwap) -> "SwapOut":
+    def of(cls, s: TransportSwap, why: str) -> "SwapOut":
         return cls(alternative=s.alternative, weekly_km=s.weekly_km, co2_kg_saved_per_week=s.co2_kg_saved_per_week,
-                   vehicle_km_off_road_per_week=s.vehicle_km_off_road_per_week)
+                   vehicle_km_off_road_per_week=s.vehicle_km_off_road_per_week, why=why, impact=swap_impact(s))
 
 
 class CommuteOut(BaseModel):
@@ -134,11 +140,13 @@ class MemberPlanOut(BaseModel):
     commute: CommuteOut | None
 
     @classmethod
-    def of(cls, p: MemberPlan) -> "MemberPlanOut":
-        commute = CommuteOut(mask=p.commute.mask, swaps=[SwapOut.of(s) for s in p.commute.swaps]) \
-            if p.commute else None
-        return cls(member_id=p.member.id, name=p.member.name, decisions=[DecisionOut.of(d) for d in p.decisions],
-                   commute=commute)
+    def of(cls, p: MemberPlan, whys: dict[str, str], has_purifier: bool) -> "MemberPlanOut":
+        member_id = p.member.id
+        commute = CommuteOut(mask=p.commute.mask, swaps=[
+            SwapOut.of(s, whys[swap_key(member_id, s.alternative)]) for s in p.commute.swaps]) if p.commute else None
+        decisions = [DecisionOut.of(d, whys[decision_key(member_id, i)], has_purifier)
+                     for i, d in enumerate(p.decisions)]
+        return cls(member_id=member_id, name=p.member.name, decisions=decisions, commute=commute)
 
 
 class HomeAdviceOut(BaseModel):
@@ -146,11 +154,13 @@ class HomeAdviceOut(BaseModel):
     at: datetime | None
     indoor_pm_cut_pct: int | None
     purifier_cadr_m3h: int | None
+    why: str
+    impact: str | None
 
     @classmethod
-    def of(cls, a: HomeAdvice) -> "HomeAdviceOut":
+    def of(cls, a: HomeAdvice, why: str, home: Home) -> "HomeAdviceOut":
         return cls(action=a.action, at=a.at, indoor_pm_cut_pct=a.indoor_pm_cut_pct,
-                   purifier_cadr_m3h=a.purifier_cadr_m3h)
+                   purifier_cadr_m3h=a.purifier_cadr_m3h, why=why, impact=home_impact(a, home))
 
 
 class PlanOut(BaseModel):
@@ -160,11 +170,17 @@ class PlanOut(BaseModel):
     windows: WindowsOut | None
     members: list[MemberPlanOut]
     home: list[HomeAdviceOut]
+    ai_used: bool  # False: the explanations are the app's own templates
     sources: list[str] = Field(default_factory=lambda: list(FACTOR_SOURCES))
 
     @classmethod
-    def of(cls, plan: DayPlan, snapshot: AirSnapshot, city: City | None) -> "PlanOut":
+    def of(cls, plan: DayPlan, snapshot: AirSnapshot, city: City | None, home: Home,
+           explanations: Explanations) -> "PlanOut":
+        whys = explanations.whys
         windows = WindowsOut(best=WindowOut.of(plan.windows.best), worst=WindowOut.of(plan.windows.worst)) \
             if plan.windows else None
-        return cls(city=city.name if city else None, day=plan.day, air=AirOut.of(snapshot), windows=windows,
-                   members=[MemberPlanOut.of(m) for m in plan.members], home=[HomeAdviceOut.of(a) for a in plan.home])
+        return cls(
+            city=city.name if city else None, day=plan.day, air=AirOut.of(snapshot), windows=windows,
+            members=[MemberPlanOut.of(m, whys, home.has_purifier) for m in plan.members],
+            home=[HomeAdviceOut.of(a, whys[home_key(a.action)], home) for a in plan.home],
+            ai_used=explanations.ai_used)

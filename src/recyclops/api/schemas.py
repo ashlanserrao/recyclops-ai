@@ -1,0 +1,170 @@
+"""The API's request and response shapes, and how domain results map onto them."""
+
+from datetime import date, datetime
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from recyclops.data.models import AirSnapshot, DataStatus
+from recyclops.domain.aqi import Band, Pollutant
+from recyclops.domain.cities import City
+from recyclops.domain.factors import EPA_EFH, IGHGP_RAIL, IGHGP_ROAD, PURIFIER_REDUCTION
+from recyclops.domain.forecast import Window
+from recyclops.domain.home import HomeAction, HomeAdvice
+from recyclops.domain.household import Activity, Household
+from recyclops.domain.impact import Alternative, TransportSwap
+from recyclops.domain.plan import DayPlan, MemberPlan
+from recyclops.domain.rounding import round_half_up
+from recyclops.domain.rules import Action, Decision, Mask, Reason
+
+FACTOR_SOURCES = (IGHGP_ROAD, IGHGP_RAIL, EPA_EFH, PURIFIER_REDUCTION.source)
+
+
+class _In(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+class Location(_In):
+    # India's mainland and islands, roughly: a guard against swapped or nonsense coordinates.
+    lat: Annotated[float, Field(ge=6.0, le=37.6)]
+    lon: Annotated[float, Field(ge=68.0, le=97.5)]
+
+
+class PlanRequest(_In):
+    location: Location
+    household: Household
+
+
+class StationOut(BaseModel):
+    name: str
+    distance_km: float
+
+
+class AqiOut(BaseModel):
+    value: int
+    band: Band
+    prominent: Pollutant
+    method: str = "NAQI method, PM-based (24-hour averages of PM2.5 and PM10)"
+
+
+class AirOut(BaseModel):
+    status: DataStatus
+    station: StationOut | None
+    aqi: AqiOut | None
+    pm25_24h: float | None
+    pm10_24h: float | None
+    measured_at: datetime | None
+    source: str | None
+    forecast_source: str
+    forecast_corrected: bool  # scaled to the live reading, or the raw model
+
+    @classmethod
+    def of(cls, snapshot: AirSnapshot) -> "AirOut":
+        reading = snapshot.reading
+        aqi = reading.aqi if reading else None
+        return cls(
+            status=snapshot.status,
+            station=StationOut(name=reading.station.name, distance_km=round(reading.station.distance_km, 1))
+            if reading else None,
+            aqi=AqiOut(value=aqi.value, band=aqi.band, prominent=aqi.prominent) if aqi else None,
+            pm25_24h=round(reading.pm25_24h.value, 1) if reading and reading.pm25_24h else None,
+            pm10_24h=round(reading.pm10_24h.value, 1) if reading and reading.pm10_24h else None,
+            measured_at=reading.measured_at if reading else None,
+            source=reading.source if reading else None,
+            forecast_source=snapshot.forecast_source,
+            forecast_corrected=snapshot.forecast.bias is not None,
+        )
+
+
+class WindowOut(BaseModel):
+    start: datetime
+    end: datetime
+    pm25: int
+    band: Band
+
+    @classmethod
+    def of(cls, window: Window) -> "WindowOut":
+        return cls(start=window.start, end=window.end, pm25=round_half_up(window.mean_pm25), band=window.band)
+
+
+class WindowsOut(BaseModel):
+    best: WindowOut
+    worst: WindowOut
+    note: str = "From the hourly forecast: an indication, not an official AQI."
+
+
+class DecisionOut(BaseModel):
+    activity: Activity
+    action: Action
+    band_now: Band | None
+    new_start: datetime | None
+    new_duration_min: int | None
+    mask: Mask
+    exposure_cut_pct: int | None
+    reasons: list[Reason]
+
+    @classmethod
+    def of(cls, d: Decision) -> "DecisionOut":
+        return cls(activity=d.activity, action=d.action, band_now=d.band_now, new_start=d.new_start,
+                   new_duration_min=d.new_duration_min, mask=d.mask, exposure_cut_pct=d.exposure_cut_pct,
+                   reasons=list(d.reasons))
+
+
+class SwapOut(BaseModel):
+    alternative: Alternative
+    weekly_km: float
+    co2_kg_saved_per_week: float
+    vehicle_km_off_road_per_week: float
+
+    @classmethod
+    def of(cls, s: TransportSwap) -> "SwapOut":
+        return cls(alternative=s.alternative, weekly_km=s.weekly_km, co2_kg_saved_per_week=s.co2_kg_saved_per_week,
+                   vehicle_km_off_road_per_week=s.vehicle_km_off_road_per_week)
+
+
+class CommuteOut(BaseModel):
+    mask: Mask
+    swaps: list[SwapOut]
+
+
+class MemberPlanOut(BaseModel):
+    member_id: str
+    name: str
+    decisions: list[DecisionOut]
+    commute: CommuteOut | None
+
+    @classmethod
+    def of(cls, p: MemberPlan) -> "MemberPlanOut":
+        commute = CommuteOut(mask=p.commute.mask, swaps=[SwapOut.of(s) for s in p.commute.swaps]) \
+            if p.commute else None
+        return cls(member_id=p.member.id, name=p.member.name, decisions=[DecisionOut.of(d) for d in p.decisions],
+                   commute=commute)
+
+
+class HomeAdviceOut(BaseModel):
+    action: HomeAction
+    at: datetime | None
+    indoor_pm_cut_pct: int | None
+    purifier_cadr_m3h: int | None
+
+    @classmethod
+    def of(cls, a: HomeAdvice) -> "HomeAdviceOut":
+        return cls(action=a.action, at=a.at, indoor_pm_cut_pct=a.indoor_pm_cut_pct,
+                   purifier_cadr_m3h=a.purifier_cadr_m3h)
+
+
+class PlanOut(BaseModel):
+    city: str | None
+    day: date
+    air: AirOut
+    windows: WindowsOut | None
+    members: list[MemberPlanOut]
+    home: list[HomeAdviceOut]
+    sources: list[str] = Field(default_factory=lambda: list(FACTOR_SOURCES))
+
+    @classmethod
+    def of(cls, plan: DayPlan, snapshot: AirSnapshot, city: City | None) -> "PlanOut":
+        windows = WindowsOut(best=WindowOut.of(plan.windows.best), worst=WindowOut.of(plan.windows.worst)) \
+            if plan.windows else None
+        return cls(city=city.name if city else None, day=plan.day, air=AirOut.of(snapshot), windows=windows,
+                   members=[MemberPlanOut.of(m) for m in plan.members], home=[HomeAdviceOut.of(a) for a in plan.home])

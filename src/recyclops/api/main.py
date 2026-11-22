@@ -11,7 +11,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 
 from recyclops.api.errors import add_error_handlers
 from recyclops.api.middleware import guard_requests
-from recyclops.api.routes import health
+from recyclops.api.routes import health, plan
 from recyclops.api.static import FrontendFiles
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -25,7 +25,8 @@ app.middleware("http")(guard_requests)
 # Added last so it wraps the guard: every response leaves compressed with the guard's headers kept.
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 add_error_handlers(app)
-app.include_router(health.router)
+for routes in (health, plan):
+    app.include_router(routes.router)
 
 # Mounted last: "/" would otherwise catch the API's paths too.
 if FRONTEND_DIR.is_dir():

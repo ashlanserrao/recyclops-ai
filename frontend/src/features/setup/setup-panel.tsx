@@ -14,7 +14,7 @@ const PRIVACY = "Saved in this browser only. Each plan sends it to the server, w
 
 export function SetupPanel({ profile, editing, serverErrors, onEdit, onSave, onCancel }: {
   profile: Profile | null; editing: boolean; serverErrors: FieldError[];
-  onEdit: () => void; onSave: (profile: Profile) => void; onCancel: () => void;
+  onEdit: () => void; onSave: (profile: Profile) => void; onCancel?: () => void;
 }) {
   // When the form closes, its Save button goes with it: focus moves to "Edit household" instead.
   const editButton = useRef<HTMLButtonElement>(null);

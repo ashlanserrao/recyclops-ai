@@ -7,7 +7,6 @@ test("an example household saves in one click and is still there after a reload"
   const household = page.getByRole("region", { name: "Your household" });
   await expect(household).toContainText("Delhi · Aarav (8), Dadi (68), Priya (38)");
   await expect(page.getByRole("button", { name: "Edit household" })).toBeFocused();
-  await expect(page.getByRole("status")).toHaveText("Household saved: Aarav (8), Dadi (68), Priya (38).");
 
   await page.reload();
   await expect(household).toContainText("Delhi · Aarav (8), Dadi (68), Priya (38)");

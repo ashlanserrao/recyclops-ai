@@ -158,9 +158,9 @@ export interface components {
             needs_form: boolean;
             /** Ai Used */
             ai_used: boolean;
-            asked?: components["schemas"]["AskedOut"] | null;
-            verdict?: components["schemas"]["Verdict"] | null;
-            decision?: components["schemas"]["DecisionOut"] | null;
+            asked: components["schemas"]["AskedOut"] | null;
+            verdict: components["schemas"]["Verdict"] | null;
+            decision: components["schemas"]["DecisionOut"] | null;
         };
         /** AskRequest */
         AskRequest: {
@@ -378,7 +378,7 @@ export interface components {
             /** Ai Used */
             ai_used: boolean;
             /** Sources */
-            sources?: string[];
+            sources: string[];
         };
         /** PlanRequest */
         PlanRequest: {

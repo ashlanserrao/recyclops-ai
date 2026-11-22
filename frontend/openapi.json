@@ -306,7 +306,8 @@
         "required": [
           "value",
           "band",
-          "prominent"
+          "prominent",
+          "method"
         ],
         "title": "AqiOut"
       },
@@ -386,7 +387,10 @@
         "required": [
           "air",
           "needs_form",
-          "ai_used"
+          "ai_used",
+          "asked",
+          "verdict",
+          "decision"
         ],
         "title": "AskOut"
       },
@@ -1064,7 +1068,8 @@
           "windows",
           "members",
           "home",
-          "ai_used"
+          "ai_used",
+          "sources"
         ],
         "title": "PlanOut"
       },
@@ -1265,7 +1270,8 @@
         "type": "object",
         "required": [
           "best",
-          "worst"
+          "worst",
+          "note"
         ],
         "title": "WindowsOut"
       }

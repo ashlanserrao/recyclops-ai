@@ -14,12 +14,22 @@ export const BAND_LABELS: Record<Band, string> = {
 /** The CSS token suffix for a band: `very_poor` -> `very-poor` (classes like bg-aqi-very-poor-soft). */
 export const bandToken = (band: Band) => band.replace("_", "-");
 
-/** 5 pm, 6:30 am: the time as shown in India, from an ISO string with its offset. */
-export function clock(iso: string): string {
-  const [hours, minutes] = iso.slice(11, 16).split(":").map(Number);
-  const hour = (hours ?? 0) % 12 || 12;
-  const suffix = (hours ?? 0) < 12 ? "am" : "pm";
+/** 5 pm, 6:30 am, from a time of day ("17:00" or "17:00:00"). */
+export function clockTime(hhmm: string): string {
+  const [hours = 0, minutes = 0] = hhmm.slice(0, 5).split(":").map(Number);
+  const hour = hours % 12 || 12;
+  const suffix = hours < 12 ? "am" : "pm";
   return minutes ? `${hour}:${String(minutes).padStart(2, "0")} ${suffix}` : `${hour} ${suffix}`;
+}
+
+/** 5 pm, 6:30 am: the time as shown in India, from an ISO string with its offset (not the browser's zone). */
+export const clock = (iso: string) => clockTime(iso.slice(11, 16));
+
+/** "Wed 25 Nov", from "2026-11-25" (a calendar date, read without time zones). */
+export function day(isoDate: string): string {
+  const [year = 0, month = 1, date = 1] = isoDate.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, date))
+    .toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
 }
 
 /** "25 Nov, 1 pm": the reading's own time, never "now". */

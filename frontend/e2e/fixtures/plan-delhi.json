@@ -1,0 +1,195 @@
+{
+  "city": "Delhi",
+  "day": "2026-11-25",
+  "air": {
+    "status": "live",
+    "station": {
+      "name": "ITO, Delhi - CPCB",
+      "distance_km": 2.3
+    },
+    "aqi": {
+      "value": 354,
+      "band": "very_poor",
+      "prominent": "pm25",
+      "method": "NAQI method, PM-based (24-hour averages of PM2.5 and PM10)"
+    },
+    "pm25_24h": 190.0,
+    "pm10_24h": 320.0,
+    "measured_at": "2026-11-25T12:00:00+05:30",
+    "source": "OpenAQ (data: CPCB)",
+    "forecast_source": "Open-Meteo (CAMS)",
+    "forecast_corrected": false
+  },
+  "windows": {
+    "best": {
+      "start": "2026-11-25T13:00:00+05:30",
+      "end": "2026-11-25T15:00:00+05:30",
+      "pm25": 105,
+      "band": "poor"
+    },
+    "worst": {
+      "start": "2026-11-25T20:00:00+05:30",
+      "end": "2026-11-25T22:00:00+05:30",
+      "pm25": 240,
+      "band": "very_poor"
+    },
+    "note": "From the hourly forecast: an indication, not an official AQI."
+  },
+  "members": [
+    {
+      "member_id": "aarav",
+      "name": "Aarav",
+      "decisions": [
+        {
+          "activity": {
+            "kind": "play",
+            "start": "17:00:00",
+            "duration_min": 60,
+            "intensity": "moderate"
+          },
+          "action": "move",
+          "band_now": "very_poor",
+          "new_start": "2026-11-25T13:00:00+05:30",
+          "new_duration_min": 30,
+          "mask": "none",
+          "exposure_cut_pct": 77,
+          "reasons": [
+            "sensitive_child",
+            "light_only",
+            "cleaner_window",
+            "avoid_main_road"
+          ],
+          "why": "The air will be very poor at the planned time. The cleanest part of the day is poor, so moving the outdoor play there means breathing cleaner air. This matters because children breathe in more air for their size than adults do. Keep it gentle, so less air is breathed in. Stay away from busy roads, where the air is dirtier than at the monitoring station.",
+          "impact": "1 pm to 1:30 pm, 30 minutes: about 77% less PM2.5 breathed in."
+        }
+      ],
+      "commute": null
+    },
+    {
+      "member_id": "dadi",
+      "name": "Dadi",
+      "decisions": [
+        {
+          "activity": {
+            "kind": "walk",
+            "start": "07:00:00",
+            "duration_min": 30,
+            "intensity": "light"
+          },
+          "action": "indoor",
+          "band_now": "very_poor",
+          "new_start": null,
+          "new_duration_min": null,
+          "mask": "none",
+          "exposure_cut_pct": 0,
+          "reasons": [
+            "sensitive_senior",
+            "health_respiratory"
+          ],
+          "why": "The air will be very poor then, too polluted for the walk outdoors; an indoor alternative is safer. This matters because polluted air strains older lungs and hearts more and polluted air can trigger asthma and other breathing problems.",
+          "impact": "Without a purifier, indoor air is about as polluted as outdoor air: staying in helps most with windows shut and a purifier running."
+        }
+      ],
+      "commute": null
+    },
+    {
+      "member_id": "priya",
+      "name": "Priya",
+      "decisions": [],
+      "commute": {
+        "mask": "none",
+        "swaps": [
+          {
+            "alternative": "metro",
+            "weekly_km": 150.0,
+            "co2_kg_saved_per_week": 19.8,
+            "vehicle_km_off_road_per_week": 150.0,
+            "why": "The metro runs on its schedule anyway, so one more rider adds very little, and the road gets one vehicle less.",
+            "impact": "Saves about 19.8 kg of CO2 a week and takes 150 km of driving off the roads."
+          },
+          {
+            "alternative": "bus",
+            "weekly_km": 150.0,
+            "co2_kg_saved_per_week": 18.7,
+            "vehicle_km_off_road_per_week": 150.0,
+            "why": "A bus carries dozens of people for the fuel of a few cars.",
+            "impact": "Saves about 18.7 kg of CO2 a week and takes 150 km of driving off the roads."
+          },
+          {
+            "alternative": "carpool",
+            "weekly_km": 150.0,
+            "co2_kg_saved_per_week": 14.0,
+            "vehicle_km_off_road_per_week": 100.0,
+            "why": "Sharing one car between three people cuts each person's share of its exhaust to a third.",
+            "impact": "Saves about 14 kg of CO2 a week and takes 100 km of driving off the roads."
+          }
+        ]
+      }
+    }
+  ],
+  "home": [
+    {
+      "action": "keep_windows_shut",
+      "at": "2026-11-25T20:00:00+05:30",
+      "indoor_pm_cut_pct": null,
+      "purifier_cadr_m3h": null,
+      "why": "The outside air is at its worst in this stretch; closed windows keep most of it out.",
+      "impact": "Shut from 8 pm to 10 pm."
+    },
+    {
+      "action": "air_out_in_best_window",
+      "at": "2026-11-25T13:00:00+05:30",
+      "indoor_pm_cut_pct": null,
+      "purifier_cadr_m3h": null,
+      "why": "Opening up briefly when the outside air is cleanest clears cooking fumes and stale air without letting the worst of the smog in.",
+      "impact": "Open the windows for 10 to 15 minutes from 1 pm."
+    },
+    {
+      "action": "close_road_side",
+      "at": null,
+      "indoor_pm_cut_pct": null,
+      "purifier_cadr_m3h": null,
+      "why": "Traffic makes road-facing air the dirtiest; let air in from the side away from the road.",
+      "impact": null
+    },
+    {
+      "action": "consider_purifier",
+      "at": null,
+      "indoor_pm_cut_pct": 49,
+      "purifier_cadr_m3h": null,
+      "why": "Without a purifier, indoor air is about as polluted as outdoor air on days like this.",
+      "impact": "A purifier sized for the room cuts indoor PM2.5 by about 49%."
+    },
+    {
+      "action": "use_kitchen_exhaust",
+      "at": null,
+      "indoor_pm_cut_pct": null,
+      "purifier_cadr_m3h": null,
+      "why": "With windows shut, cooking fumes stay inside unless a chimney or exhaust fan carries them out.",
+      "impact": null
+    },
+    {
+      "action": "wet_mop",
+      "at": null,
+      "indoor_pm_cut_pct": null,
+      "purifier_cadr_m3h": null,
+      "why": "Sweeping throws settled dust back into the air; a damp mop holds on to it.",
+      "impact": null
+    },
+    {
+      "action": "no_incense_or_coils",
+      "at": null,
+      "indoor_pm_cut_pct": null,
+      "purifier_cadr_m3h": null,
+      "why": "Incense and mosquito coils add fine smoke to air that is already polluted.",
+      "impact": null
+    }
+  ],
+  "ai_used": false,
+  "sources": [
+    "India GHG Program (WRI India, TERI, CII), India Specific Road Transport Emission Factors, v1.0, 2015",
+    "India GHG Program, India Specific Rail Transport Emission Factors, v1.0, 2015",
+    "US EPA Exposure Factors Handbook, ch. 6 (Sep 2011), Table 6-2, mean short-term inhalation rates",
+    "Chen C-F et al., Int J Environ Res Public Health 2022 (PMC9516965): HEPA cleaner, 33.5 to 17.2 µg/m³"
+  ]
+}

@@ -27,6 +27,11 @@ class _In(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+class _Out(BaseModel):
+    # Fields with defaults are still always sent, so the schema (and the frontend's generated types) mark them required.
+    model_config = ConfigDict(json_schema_serialization_defaults_required=True)
+
+
 class Location(_In):
     # India's mainland and islands, roughly: a guard against swapped or nonsense coordinates.
     lat: Annotated[float, Field(ge=6.0, le=37.6)]
@@ -60,7 +65,7 @@ class AskRequest(_In):
         return self
 
 
-class CityOut(BaseModel):
+class CityOut(_Out):
     name: str
     state: str
     lat: float
@@ -72,19 +77,19 @@ class CityOut(BaseModel):
         return cls(name=city.name, state=city.state, lat=city.lat, lon=city.lon, has_metro=city.has_metro)
 
 
-class StationOut(BaseModel):
+class StationOut(_Out):
     name: str
     distance_km: float
 
 
-class AqiOut(BaseModel):
+class AqiOut(_Out):
     value: int
     band: Band
     prominent: Pollutant
     method: str = "NAQI method, PM-based (24-hour averages of PM2.5 and PM10)"
 
 
-class AirOut(BaseModel):
+class AirOut(_Out):
     status: DataStatus
     station: StationOut | None
     aqi: AqiOut | None
@@ -113,7 +118,7 @@ class AirOut(BaseModel):
         )
 
 
-class WindowOut(BaseModel):
+class WindowOut(_Out):
     start: datetime
     end: datetime
     pm25: int
@@ -124,13 +129,13 @@ class WindowOut(BaseModel):
         return cls(start=window.start, end=window.end, pm25=round_half_up(window.mean_pm25), band=window.band)
 
 
-class WindowsOut(BaseModel):
+class WindowsOut(_Out):
     best: WindowOut
     worst: WindowOut
     note: str = "From the hourly forecast: an indication, not an official AQI."
 
 
-class DecisionOut(BaseModel):
+class DecisionOut(_Out):
     activity: Activity
     action: Action
     band_now: Band | None
@@ -149,7 +154,7 @@ class DecisionOut(BaseModel):
                    reasons=list(d.reasons), why=why, impact=decision_impact(d, has_purifier))
 
 
-class SwapOut(BaseModel):
+class SwapOut(_Out):
     alternative: Alternative
     weekly_km: float
     co2_kg_saved_per_week: float
@@ -163,12 +168,12 @@ class SwapOut(BaseModel):
                    vehicle_km_off_road_per_week=s.vehicle_km_off_road_per_week, why=why, impact=swap_impact(s))
 
 
-class CommuteOut(BaseModel):
+class CommuteOut(_Out):
     mask: Mask
     swaps: list[SwapOut]
 
 
-class MemberPlanOut(BaseModel):
+class MemberPlanOut(_Out):
     member_id: str
     name: str
     decisions: list[DecisionOut]
@@ -184,7 +189,7 @@ class MemberPlanOut(BaseModel):
         return cls(member_id=member_id, name=p.member.name, decisions=decisions, commute=commute)
 
 
-class HomeAdviceOut(BaseModel):
+class HomeAdviceOut(_Out):
     action: HomeAction
     at: datetime | None
     indoor_pm_cut_pct: int | None
@@ -210,7 +215,7 @@ VERDICTS = {Action.KEEP: Verdict.YES, Action.MOVE: Verdict.BETTER_TIME, Action.S
             Action.INDOOR: Verdict.INDOORS, Action.NO_DATA: Verdict.UNKNOWN}
 
 
-class AskedOut(BaseModel):
+class AskedOut(_Out):
     """What the app understood the question to be: shown back, so a misreading is visible."""
     member_id: str
     name: str
@@ -218,7 +223,7 @@ class AskedOut(BaseModel):
     activity: Activity
 
 
-class AskOut(BaseModel):
+class AskOut(_Out):
     air: AirOut
     needs_form: bool   # the question couldn't be read: show the form
     ai_used: bool      # the AI read the question (the decision is always code's)
@@ -227,7 +232,7 @@ class AskOut(BaseModel):
     decision: DecisionOut | None = None
 
 
-class PlanOut(BaseModel):
+class PlanOut(_Out):
     city: str | None
     day: date
     air: AirOut

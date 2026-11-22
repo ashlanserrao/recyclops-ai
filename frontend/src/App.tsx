@@ -1,24 +1,39 @@
 import { Wind } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PlanSection } from "@/features/plan/plan-section";
+import { type PlanState, usePlan } from "@/features/plan/use-plan";
 import { SetupPanel } from "@/features/setup/setup-panel";
 import type { FieldError } from "@/lib/api/types";
-import { membersLine, type Profile } from "@/lib/household";
+import { BAND_LABELS } from "@/lib/format";
+import type { Profile } from "@/lib/household";
 import { loadProfile, saveProfile } from "@/lib/storage/profile";
 
 const NO_ERRORS: FieldError[] = [];
 
-/** The page shell:skip link, header, the planner (built section by section), and the data sources. */
+/** What a screen reader hears as the plan changes; failures use their own alert instead. */
+function announcement(state: PlanState): string {
+  if (state.status === "loading") return "Planning the day…";
+  if (state.status !== "ready") return "";
+  const { city, air } = state.plan;
+  const aqi = air.aqi ? ` AQI ${air.aqi.value}, ${BAND_LABELS[air.aqi.band]}.` : " No measured AQI nearby.";
+  return `Plan ready for ${city ?? "your location"}.${aqi}`;
+}
+
+/** The page: the household (saved in this browser), then today's air and plan for it. */
 export default function App() {
   const [profile, setProfile] = useState<Profile | null>(loadProfile);
   const [editing, setEditing] = useState(profile === null);
-  const [announcement, setAnnouncement] = useState("");
+  const { state, refresh } = usePlan(profile);
+
+  // The server checks every value; anything it rejects reopens the form on the fields it names.
+  const fieldErrors = state.status === "failed" && state.error.fields.length ? state.error.fields : NO_ERRORS;
+  const formOpen = editing || fieldErrors !== NO_ERRORS;
 
   const save = (next: Profile) => {
     saveProfile(next);
     setProfile(next);
     setEditing(false);
-    setAnnouncement(`Household saved: ${membersLine(next.household)}.`);
   };
 
   return (
@@ -38,15 +53,17 @@ export default function App() {
       </header>
       <main id="main" className="mx-auto max-w-5xl space-y-6 px-4 py-6">
         <h1 className="text-2xl">Plan your household's day around the air</h1>
-        <SetupPanel profile={profile} editing={editing} serverErrors={NO_ERRORS}
-          onEdit={() => setEditing(true)} onSave={save} onCancel={() => setEditing(false)} />
+        <SetupPanel profile={profile} editing={formOpen} serverErrors={fieldErrors}
+          onEdit={() => setEditing(true)} onSave={save}
+          onCancel={fieldErrors === NO_ERRORS ? () => setEditing(false) : undefined} />
+        {!formOpen && <PlanSection state={state} onRefresh={refresh} />}
       </main>
       <footer className="mx-auto max-w-5xl px-4 pb-8 text-xs text-muted-foreground">
         Air data: monitoring stations via OpenAQ (CPCB network) and the Open-Meteo forecast (CAMS).
         Advice is computed by fixed rules from that data; the AI only words it.
       </footer>
       {/* One polite announcer for results that appear without a page change. */}
-      <p role="status" aria-live="polite" className="sr-only">{announcement}</p>
+      <p role="status" aria-live="polite" className="sr-only">{announcement(state)}</p>
     </>
   );
 }

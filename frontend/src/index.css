@@ -1,24 +1,199 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/inter";
 
-/* Colour tokens: every text/background pair used together meets WCAG AA contrast. */
-@theme {
-  --color-background: #f8fafc;
-  --color-foreground: #0f172a;
-  --color-muted: #475569;
-  --color-surface: #ffffff;
-  --color-border: #cbd5e1;
-  --color-focus: #1d4ed8;
+/* Dark mode follows data-theme on <html> (public/theme-init.js), never a .dark class. */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/*
+  Tokens in three tiers: raw (--bg-*, --text-*, semantic, AQI bands) -> Tailwind colours (@theme inline)
+  -> classes in components. Every pair used together is checked for WCAG AA by `npm run contrast`.
+  Calm, cool base so the six CPCB band colours read clearly; one teal brand accent; violet only for AI.
+  Every band colour is always paired with the band's word: colour is never the only signal.
+*/
+:root {
+  color-scheme: light;
+  --bg-canvas: #f5f7f9;
+  --bg-surface: #ffffff;
+  --bg-surface-soft: #edf1f5;
+  --border-subtle: #dbe2e9;
+  --border-strong: #77838f; /* field edges: 3:1 or more on every surface */
+  --text-primary: #132030;
+  --text-secondary: #46566a;
+  --text-tertiary: #556578;
+
+  --accent: #0d6b66;
+  --accent-hover: #0a5753;
+  --accent-soft: #e1f1ef;
+  --accent-ink: #0a4f4b;
+  --on-accent: #ffffff;
+
+  --warning: #8a5300;
+  --warning-soft: #fcf0da;
+  --danger: #b3261e;
+  --danger-soft: #fceae8;
+  --success: #2c6b48;
+  --success-soft: #e4f2ea;
+
+  /* AI-worded text: its own quiet violet, never mistaken for a measured fact. */
+  --ai: #6a4a9c;
+  --ai-soft: #f8f5fd;
+  --ai-tint: #efe8f8;
+  --ai-border: #dfd3ef;
+
+  /* CPCB bands: ink (text), soft (fill), border, swatch (decorative dot or bar). */
+  --aqi-good: #1d6a33;          --aqi-good-soft: #e3f3e7;          --aqi-good-border: #b5dcc0;          --aqi-good-swatch: #2f9e50;
+  --aqi-satisfactory: #456312;  --aqi-satisfactory-soft: #edf5da;  --aqi-satisfactory-border: #cde2a0;  --aqi-satisfactory-swatch: #8cbf3f;
+  --aqi-moderate: #735200;      --aqi-moderate-soft: #fcf3d2;      --aqi-moderate-border: #ecd584;      --aqi-moderate-swatch: #e0b100;
+  --aqi-poor: #924400;          --aqi-poor-soft: #fdebd8;          --aqi-poor-border: #f2c393;          --aqi-poor-swatch: #ef8a17;
+  --aqi-very-poor: #b0221a;     --aqi-very-poor-soft: #fde8e7;     --aqi-very-poor-border: #f3b5b0;     --aqi-very-poor-swatch: #dc3a2f;
+  --aqi-severe: #7a1631;        --aqi-severe-soft: #f8e5eb;        --aqi-severe-border: #e4b1c1;        --aqi-severe-swatch: #8c1c3e;
+
+  --browser-bar: var(--bg-canvas);
+  --radius: 14px;
 }
 
-body {
-  background: var(--color-background);
-  color: var(--color-foreground);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+@media screen {
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg-canvas: #0e1620;
+    --bg-surface: #152029;
+    --bg-surface-soft: #1c2934;
+    --border-subtle: #293947;
+    --border-strong: #7a8896;
+    --text-primary: #e6edf3;
+    --text-secondary: #a9b6c3;
+    --text-tertiary: #97a5b3;
+
+    --accent: #1b7c76;
+    --accent-hover: #166a65;
+    --accent-soft: #16312f;
+    --accent-ink: #7fd3cb;
+
+    --warning: #f0c36d;
+    --warning-soft: #352a12;
+    --danger: #ff9d94;
+    --danger-soft: #3b1b19;
+    --success: #8dd3aa;
+    --success-soft: #19301f;
+
+    --ai: #cdbbf5;
+    --ai-soft: #221d30;
+    --ai-tint: #2e2640;
+    --ai-border: #463a5c;
+
+    --aqi-good: #8bd8a2;          --aqi-good-soft: #15301e;          --aqi-good-border: #2c5a3a;
+    --aqi-satisfactory: #c2df7f;  --aqi-satisfactory-soft: #232e15;  --aqi-satisfactory-border: #4a5c25;
+    --aqi-moderate: #f1d36c;      --aqi-moderate-soft: #322a0e;      --aqi-moderate-border: #5e4f1c;
+    --aqi-poor: #ffb26e;          --aqi-poor-soft: #382311;          --aqi-poor-border: #6b4320;
+    --aqi-very-poor: #ff9c92;     --aqi-very-poor-soft: #3c1917;     --aqi-very-poor-border: #6e302b;
+    --aqi-severe: #f4a5bf;        --aqi-severe-soft: #391522;        --aqi-severe-border: #6a2c42;
+  }
 }
 
-/* A visible focus ring for keyboard users on every interactive element. */
-:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 2px;
+@theme inline {
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-background: var(--bg-canvas);
+  --color-foreground: var(--text-primary);
+  --color-surface: var(--bg-surface);
+  --color-surface-soft: var(--bg-surface-soft);
+  --color-card: var(--bg-surface);
+  --color-muted-foreground: var(--text-secondary);
+  --color-subtle-foreground: var(--text-tertiary);
+  --color-border: var(--border-subtle);
+  --color-input: var(--border-strong);
+  --color-ring: var(--accent);
+  --color-primary: var(--accent);
+  --color-primary-hover: var(--accent-hover);
+  --color-primary-soft: var(--accent-soft);
+  --color-primary-ink: var(--accent-ink);
+  --color-primary-foreground: var(--on-accent);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-ai: var(--ai);
+  --color-ai-soft: var(--ai-soft);
+  --color-ai-tint: var(--ai-tint);
+  --color-ai-border: var(--ai-border);
+  --color-aqi-good: var(--aqi-good);
+  --color-aqi-good-soft: var(--aqi-good-soft);
+  --color-aqi-good-border: var(--aqi-good-border);
+  --color-aqi-good-swatch: var(--aqi-good-swatch);
+  --color-aqi-satisfactory: var(--aqi-satisfactory);
+  --color-aqi-satisfactory-soft: var(--aqi-satisfactory-soft);
+  --color-aqi-satisfactory-border: var(--aqi-satisfactory-border);
+  --color-aqi-satisfactory-swatch: var(--aqi-satisfactory-swatch);
+  --color-aqi-moderate: var(--aqi-moderate);
+  --color-aqi-moderate-soft: var(--aqi-moderate-soft);
+  --color-aqi-moderate-border: var(--aqi-moderate-border);
+  --color-aqi-moderate-swatch: var(--aqi-moderate-swatch);
+  --color-aqi-poor: var(--aqi-poor);
+  --color-aqi-poor-soft: var(--aqi-poor-soft);
+  --color-aqi-poor-border: var(--aqi-poor-border);
+  --color-aqi-poor-swatch: var(--aqi-poor-swatch);
+  --color-aqi-very-poor: var(--aqi-very-poor);
+  --color-aqi-very-poor-soft: var(--aqi-very-poor-soft);
+  --color-aqi-very-poor-border: var(--aqi-very-poor-border);
+  --color-aqi-very-poor-swatch: var(--aqi-very-poor-swatch);
+  --color-aqi-severe: var(--aqi-severe);
+  --color-aqi-severe-soft: var(--aqi-severe-soft);
+  --color-aqi-severe-border: var(--aqi-severe-border);
+  --color-aqi-severe-swatch: var(--aqi-severe-swatch);
+  --radius-md: var(--radius);
+  --radius-xl: 20px;
+}
+
+@layer base {
+  * {
+    border-color: var(--border-subtle);
+  }
+  html {
+    scrollbar-width: thin; /* unconditional: this laptop's Chrome reports touch-only */
+    scrollbar-gutter: stable;
+  }
+  body {
+    background: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    line-height: 1.2;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  /* A gap ring that shows on any background. */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--accent);
+  }
+  [data-theme="dark"] :focus-visible {
+    box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--accent-ink);
+  }
+  input:-webkit-autofill {
+    box-shadow: 0 0 0 1000px var(--bg-surface) inset;
+    -webkit-text-fill-color: var(--text-primary);
+  }
+}
+
+/* Figures line up in columns. */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+html.theme-switching * {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
 }

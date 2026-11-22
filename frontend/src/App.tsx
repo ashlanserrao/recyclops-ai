@@ -1,28 +1,30 @@
-import { useEffect, useState } from "react";
+import { Wind } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
-type ApiStatus = "checking" | "ok" | "unreachable";
-
-/** Placeholder shell for the hello-world deploy: proves the site, the /api rewrite and the backend are wired. */
+/** The page shell: skip link, header, the planner (built section by section), and the data sources. */
 export default function App() {
-  const [status, setStatus] = useState<ApiStatus>("checking");
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/health", { signal: controller.signal })
-      .then((response) => setStatus(response.ok ? "ok" : "unreachable"))
-      .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === "AbortError")) setStatus("unreachable");
-      });
-    return () => controller.abort();
-  }, []);
-
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">recyclops-ai</h1>
-      <p className="mt-2 text-muted">A clean-air day planner for your household, built on live air-quality data.</p>
-      <p className="mt-6" aria-live="polite">
-        Service status: <strong>{status}</strong>
-      </p>
-    </main>
+    <>
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-surface focus:px-4 focus:py-2">
+        Skip to content
+      </a>
+      <header className="border-b bg-surface">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+          <p className="flex items-center gap-2 font-semibold">
+            <Wind className="size-5 text-primary-ink" aria-hidden="true" />
+            recyclops-ai
+            <span className="hidden text-sm font-normal text-muted-foreground sm:inline">clean-air day planner</span>
+          </p>
+          <ThemeToggle />
+        </div>
+      </header>
+      <main id="main" className="mx-auto max-w-5xl space-y-6 px-4 py-6">
+        <h1 className="text-2xl">Plan your household's day around the air</h1>
+      </main>
+      <footer className="mx-auto max-w-5xl px-4 pb-8 text-xs text-muted-foreground">
+        Air data: monitoring stations via OpenAQ (CPCB network) and the Open-Meteo forecast (CAMS).
+        Advice is computed by fixed rules from that data; the AI only words it.
+      </footer>
+    </>
   );
 }

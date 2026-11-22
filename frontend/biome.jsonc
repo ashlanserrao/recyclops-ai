@@ -2,7 +2,7 @@
 // The formatter stays off: no reformatting.
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "files": { "includes": ["src/**", "e2e/**", "*.ts"] },
+  "files": { "includes": ["src/**", "e2e/**", "scripts/**", "*.ts", "!src/lib/api/generated.ts"] },
   "formatter": { "enabled": false },
   "assist": { "enabled": false },
   "css": { "parser": { "tailwindDirectives": true } },
@@ -15,6 +15,10 @@
         "useImportType": "off",
         // Used where the value is known to exist, e.g. the #root element in index.html.
         "noNonNullAssertion": "off"
+      },
+      "complexity": {
+        // Reduced motion and the theme crossfade must override every component's own transitions.
+        "noImportantStyles": "off"
       }
     }
   },

@@ -1,0 +1,1219 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "recyclops-ai",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Api Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plan": {
+      "post": {
+        "summary": "Plan",
+        "operationId": "plan_api_plan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ask": {
+      "post": {
+        "summary": "Ask",
+        "operationId": "ask_api_ask_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AskOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Action": {
+        "type": "string",
+        "enum": [
+          "keep",
+          "move",
+          "shorten",
+          "indoor",
+          "no_data"
+        ],
+        "title": "Action"
+      },
+      "Activity": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ActivityKind"
+          },
+          "start": {
+            "type": "string",
+            "format": "time",
+            "title": "Start"
+          },
+          "duration_min": {
+            "type": "integer",
+            "maximum": 240.0,
+            "minimum": 10.0,
+            "title": "Duration Min"
+          },
+          "intensity": {
+            "$ref": "#/components/schemas/Intensity"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "start",
+          "duration_min",
+          "intensity"
+        ],
+        "title": "Activity",
+        "description": "Something a member usually does outdoors on a given day."
+      },
+      "ActivityKind": {
+        "type": "string",
+        "enum": [
+          "walk",
+          "play",
+          "sport",
+          "exercise",
+          "errand",
+          "other"
+        ],
+        "title": "ActivityKind"
+      },
+      "AirOut": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
+          "station": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "aqi": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AqiOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pm25_24h": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pm25 24H"
+          },
+          "pm10_24h": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pm10 24H"
+          },
+          "measured_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Measured At"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "forecast_source": {
+            "type": "string",
+            "title": "Forecast Source"
+          },
+          "forecast_corrected": {
+            "type": "boolean",
+            "title": "Forecast Corrected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "station",
+          "aqi",
+          "pm25_24h",
+          "pm10_24h",
+          "measured_at",
+          "source",
+          "forecast_source",
+          "forecast_corrected"
+        ],
+        "title": "AirOut"
+      },
+      "Alternative": {
+        "type": "string",
+        "enum": [
+          "metro",
+          "bus",
+          "carpool"
+        ],
+        "title": "Alternative"
+      },
+      "AqiOut": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "title": "Value"
+          },
+          "band": {
+            "$ref": "#/components/schemas/Band"
+          },
+          "prominent": {
+            "$ref": "#/components/schemas/Pollutant"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "default": "NAQI method, PM-based (24-hour averages of PM2.5 and PM10)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "band",
+          "prominent"
+        ],
+        "title": "AqiOut"
+      },
+      "AskForm": {
+        "properties": {
+          "member_id": {
+            "type": "string",
+            "title": "Member Id"
+          },
+          "day": {
+            "type": "string",
+            "enum": [
+              "today",
+              "tomorrow"
+            ],
+            "title": "Day",
+            "default": "today"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/Activity"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "member_id",
+          "activity"
+        ],
+        "title": "AskForm",
+        "description": "The question as a form: used when the AI isn't available or couldn't read the typed question."
+      },
+      "AskOut": {
+        "properties": {
+          "air": {
+            "$ref": "#/components/schemas/AirOut"
+          },
+          "needs_form": {
+            "type": "boolean",
+            "title": "Needs Form"
+          },
+          "ai_used": {
+            "type": "boolean",
+            "title": "Ai Used"
+          },
+          "asked": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AskedOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Verdict"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DecisionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "air",
+          "needs_form",
+          "ai_used"
+        ],
+        "title": "AskOut"
+      },
+      "AskRequest": {
+        "properties": {
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "household": {
+            "$ref": "#/components/schemas/Household"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "form": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AskForm"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "location",
+          "household"
+        ],
+        "title": "AskRequest"
+      },
+      "AskedOut": {
+        "properties": {
+          "member_id": {
+            "type": "string",
+            "title": "Member Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/Activity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "member_id",
+          "name",
+          "day",
+          "activity"
+        ],
+        "title": "AskedOut",
+        "description": "What the app understood the question to be: shown back, so a misreading is visible."
+      },
+      "Band": {
+        "type": "string",
+        "enum": [
+          "good",
+          "satisfactory",
+          "moderate",
+          "poor",
+          "very_poor",
+          "severe"
+        ],
+        "title": "Band"
+      },
+      "Commute": {
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/CommuteMode"
+          },
+          "one_way_km": {
+            "type": "number",
+            "maximum": 100.0,
+            "exclusiveMinimum": 0.0,
+            "title": "One Way Km"
+          },
+          "days_per_week": {
+            "type": "integer",
+            "maximum": 7.0,
+            "minimum": 1.0,
+            "title": "Days Per Week"
+          },
+          "departs": {
+            "type": "string",
+            "format": "time",
+            "title": "Departs"
+          },
+          "walking_leg_min": {
+            "type": "integer",
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Walking Leg Min",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode",
+          "one_way_km",
+          "days_per_week",
+          "departs"
+        ],
+        "title": "Commute"
+      },
+      "CommuteMode": {
+        "type": "string",
+        "enum": [
+          "car",
+          "two_wheeler",
+          "auto",
+          "bus",
+          "metro",
+          "walk",
+          "cycle"
+        ],
+        "title": "CommuteMode"
+      },
+      "CommuteOut": {
+        "properties": {
+          "mask": {
+            "$ref": "#/components/schemas/Mask"
+          },
+          "swaps": {
+            "items": {
+              "$ref": "#/components/schemas/SwapOut"
+            },
+            "type": "array",
+            "title": "Swaps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mask",
+          "swaps"
+        ],
+        "title": "CommuteOut"
+      },
+      "CookingFuel": {
+        "type": "string",
+        "enum": [
+          "lpg",
+          "png",
+          "electric",
+          "biomass"
+        ],
+        "title": "CookingFuel"
+      },
+      "DataStatus": {
+        "type": "string",
+        "enum": [
+          "live",
+          "stale",
+          "unavailable"
+        ],
+        "title": "DataStatus"
+      },
+      "DecisionOut": {
+        "properties": {
+          "activity": {
+            "$ref": "#/components/schemas/Activity"
+          },
+          "action": {
+            "$ref": "#/components/schemas/Action"
+          },
+          "band_now": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Band"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "new_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Start"
+          },
+          "new_duration_min": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Duration Min"
+          },
+          "mask": {
+            "$ref": "#/components/schemas/Mask"
+          },
+          "exposure_cut_pct": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exposure Cut Pct"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/Reason"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          }
+        },
+        "type": "object",
+        "required": [
+          "activity",
+          "action",
+          "band_now",
+          "new_start",
+          "new_duration_min",
+          "mask",
+          "exposure_cut_pct",
+          "reasons",
+          "why",
+          "impact"
+        ],
+        "title": "DecisionOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthFlag": {
+        "type": "string",
+        "enum": [
+          "respiratory",
+          "heart",
+          "pregnancy"
+        ],
+        "title": "HealthFlag"
+      },
+      "Home": {
+        "properties": {
+          "has_purifier": {
+            "type": "boolean",
+            "title": "Has Purifier"
+          },
+          "purifier_room_m2": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 200.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purifier Room M2"
+          },
+          "cooking_fuel": {
+            "$ref": "#/components/schemas/CookingFuel"
+          },
+          "faces_main_road": {
+            "type": "boolean",
+            "title": "Faces Main Road"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "has_purifier",
+          "cooking_fuel",
+          "faces_main_road"
+        ],
+        "title": "Home"
+      },
+      "HomeAction": {
+        "type": "string",
+        "enum": [
+          "keep_windows_shut",
+          "air_out_in_best_window",
+          "close_road_side",
+          "run_purifier",
+          "consider_purifier",
+          "switch_from_biomass",
+          "use_kitchen_exhaust",
+          "wet_mop",
+          "no_incense_or_coils"
+        ],
+        "title": "HomeAction"
+      },
+      "HomeAdviceOut": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/HomeAction"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "indoor_pm_cut_pct": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indoor Pm Cut Pct"
+          },
+          "purifier_cadr_m3h": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purifier Cadr M3H"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "at",
+          "indoor_pm_cut_pct",
+          "purifier_cadr_m3h",
+          "why",
+          "impact"
+        ],
+        "title": "HomeAdviceOut"
+      },
+      "Household": {
+        "properties": {
+          "home": {
+            "$ref": "#/components/schemas/Home"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Members"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "home",
+          "members"
+        ],
+        "title": "Household"
+      },
+      "Intensity": {
+        "type": "string",
+        "enum": [
+          "light",
+          "moderate",
+          "high"
+        ],
+        "title": "Intensity"
+      },
+      "Location": {
+        "properties": {
+          "lat": {
+            "type": "number",
+            "maximum": 37.6,
+            "minimum": 6.0,
+            "title": "Lat"
+          },
+          "lon": {
+            "type": "number",
+            "maximum": 97.5,
+            "minimum": 68.0,
+            "title": "Lon"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "title": "Location"
+      },
+      "Mask": {
+        "type": "string",
+        "enum": [
+          "none",
+          "n95"
+        ],
+        "title": "Mask"
+      },
+      "Member": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,20}$",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "type": {
+            "$ref": "#/components/schemas/MemberType"
+          },
+          "age": {
+            "type": "integer",
+            "maximum": 110.0,
+            "minimum": 0.0,
+            "title": "Age"
+          },
+          "health_flags": {
+            "items": {
+              "$ref": "#/components/schemas/HealthFlag"
+            },
+            "type": "array",
+            "uniqueItems": true,
+            "title": "Health Flags",
+            "default": []
+          },
+          "activities": {
+            "items": {
+              "$ref": "#/components/schemas/Activity"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Activities",
+            "default": []
+          },
+          "commute": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Commute"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "age"
+        ],
+        "title": "Member"
+      },
+      "MemberPlanOut": {
+        "properties": {
+          "member_id": {
+            "type": "string",
+            "title": "Member Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionOut"
+            },
+            "type": "array",
+            "title": "Decisions"
+          },
+          "commute": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CommuteOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "member_id",
+          "name",
+          "decisions",
+          "commute"
+        ],
+        "title": "MemberPlanOut"
+      },
+      "MemberType": {
+        "type": "string",
+        "enum": [
+          "child",
+          "adult",
+          "senior",
+          "student"
+        ],
+        "title": "MemberType"
+      },
+      "PlanOut": {
+        "properties": {
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "air": {
+            "$ref": "#/components/schemas/AirOut"
+          },
+          "windows": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WindowsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/MemberPlanOut"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "home": {
+            "items": {
+              "$ref": "#/components/schemas/HomeAdviceOut"
+            },
+            "type": "array",
+            "title": "Home"
+          },
+          "ai_used": {
+            "type": "boolean",
+            "title": "Ai Used"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "city",
+          "day",
+          "air",
+          "windows",
+          "members",
+          "home",
+          "ai_used"
+        ],
+        "title": "PlanOut"
+      },
+      "PlanRequest": {
+        "properties": {
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "household": {
+            "$ref": "#/components/schemas/Household"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "location",
+          "household"
+        ],
+        "title": "PlanRequest"
+      },
+      "Pollutant": {
+        "type": "string",
+        "enum": [
+          "pm25",
+          "pm10"
+        ],
+        "title": "Pollutant"
+      },
+      "Reason": {
+        "type": "string",
+        "enum": [
+          "air_ok",
+          "severe_air",
+          "cleaner_window",
+          "no_cleaner_window",
+          "high_intensity",
+          "light_only",
+          "avoid_main_road",
+          "sensitive_child",
+          "sensitive_senior",
+          "health_respiratory",
+          "health_heart",
+          "health_pregnancy",
+          "no_forecast"
+        ],
+        "title": "Reason",
+        "description": "Why a decision was made: the AI and the templates explain these, they never invent their own."
+      },
+      "StationOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "distance_km": {
+            "type": "number",
+            "title": "Distance Km"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "distance_km"
+        ],
+        "title": "StationOut"
+      },
+      "SwapOut": {
+        "properties": {
+          "alternative": {
+            "$ref": "#/components/schemas/Alternative"
+          },
+          "weekly_km": {
+            "type": "number",
+            "title": "Weekly Km"
+          },
+          "co2_kg_saved_per_week": {
+            "type": "number",
+            "title": "Co2 Kg Saved Per Week"
+          },
+          "vehicle_km_off_road_per_week": {
+            "type": "number",
+            "title": "Vehicle Km Off Road Per Week"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why"
+          },
+          "impact": {
+            "type": "string",
+            "title": "Impact"
+          }
+        },
+        "type": "object",
+        "required": [
+          "alternative",
+          "weekly_km",
+          "co2_kg_saved_per_week",
+          "vehicle_km_off_road_per_week",
+          "why",
+          "impact"
+        ],
+        "title": "SwapOut"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Verdict": {
+        "type": "string",
+        "enum": [
+          "yes",
+          "better_time",
+          "shorter",
+          "indoors",
+          "unknown"
+        ],
+        "title": "Verdict"
+      },
+      "WindowOut": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End"
+          },
+          "pm25": {
+            "type": "integer",
+            "title": "Pm25"
+          },
+          "band": {
+            "$ref": "#/components/schemas/Band"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "pm25",
+          "band"
+        ],
+        "title": "WindowOut"
+      },
+      "WindowsOut": {
+        "properties": {
+          "best": {
+            "$ref": "#/components/schemas/WindowOut"
+          },
+          "worst": {
+            "$ref": "#/components/schemas/WindowOut"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": "From the hourly forecast: an indication, not an official AQI."
+          }
+        },
+        "type": "object",
+        "required": [
+          "best",
+          "worst"
+        ],
+        "title": "WindowsOut"
+      }
+    }
+  }
+}

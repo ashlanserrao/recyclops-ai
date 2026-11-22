@@ -41,6 +41,8 @@ const PAIRS = [
   ...["warning", "danger", "success"].flatMap((name) => [
     [`--${name}`, `--${name}-soft`, 4.5, `${name} badge`],
     [`--${name}`, "--bg-surface", 4.5, `${name} text`],
+    [`--${name}`, "--bg-surface-soft", 4.5, `${name} text on a soft row`],
+    ["--text-primary", `--${name}-soft`, 4.5, `body text in a ${name} box`],
   ]),
   ["--ai", "--ai-soft", 4.5, "AI text"],
   ["--ai", "--ai-tint", 4.5, "AI chip"],

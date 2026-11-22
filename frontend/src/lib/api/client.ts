@@ -1,7 +1,7 @@
 // The one way to the backend: same-origin paths only (the CSP allows nothing else; Vercel forwards
 // /api/* to the API). Errors carry the server's plain-language message and per-field problems.
 
-import type { AskOut, AskRequest, FieldError, PlanOut, PlanRequest } from "@/lib/api/types";
+import type { AskOut, AskRequest, City, FieldError, PlanOut, PlanRequest } from "@/lib/api/types";
 
 export class ApiError extends Error {
   readonly fields: FieldError[];
@@ -36,6 +36,8 @@ const post = <T>(path: string, body: unknown, signal?: AbortSignal) =>
   request<T>(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal });
 
 export const api = {
+  /** The cities plans know by name (the browser caches the list for a day). */
+  cities: () => request<City[]>("/api/cities"),
   /** Today's plan from live air data; the explanations may be AI-worded (`ai_used`). */
   plan: (body: PlanRequest, signal?: AbortSignal) => post<PlanOut>("/api/plan", body, signal),
   /** "Can we...?" for one member and one activity: a typed question or the form. */

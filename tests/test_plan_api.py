@@ -101,3 +101,20 @@ def test_bad_requests_get_clean_422(plan_client: TestClient, bad: dict[str, Any]
     assert response.status_code == 422
     assert response.json()["error"] == "Please check the highlighted fields."
     assert "x" * 31 not in response.text  # submitted values are never echoed
+
+
+def test_field_errors_point_at_the_field_in_plain_words(plan_client: TestClient) -> None:
+    late_walk = {"kind": "walk", "start": "23:30", "duration_min": 60, "intensity": "light"}
+    member = {**body()["household"]["members"][0], "activities": [late_walk]}
+    bad = {**body(), "household": {**body()["household"], "members": [member]}}
+    fields = plan_client.post("/api/plan", json=bad).json()["fields"]
+    assert fields == [{"field": "household.members.0.activities.0", "message": "An activity must end by midnight."}]
+
+
+def test_cities_list_matches_the_planner(client: TestClient) -> None:
+    response = client.get("/api/cities")
+    cities = response.json()
+    names = [city["name"] for city in cities]
+    assert names == sorted(names) and len(names) == len(set(names))
+    assert {"name": "Kolkata", "state": "West Bengal", "lat": 22.5726, "lon": 88.3639, "has_metro": True} in cities
+    assert response.headers["cache-control"] == "public, max-age=86400"

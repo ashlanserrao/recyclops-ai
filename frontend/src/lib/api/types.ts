@@ -10,6 +10,7 @@ export type AirOut = Schemas["AirOut"];
 export type AskOut = Schemas["AskOut"];
 export type AskRequest = Schemas["AskRequest"];
 export type Band = Schemas["Band"];
+export type City = Schemas["CityOut"];
 export type Commute = Schemas["Commute"];
 export type CommuteMode = Schemas["CommuteMode"];
 export type CookingFuel = Schemas["CookingFuel"];

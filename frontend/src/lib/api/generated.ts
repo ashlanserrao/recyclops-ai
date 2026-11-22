@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cities */
+        get: operations["cities_api_cities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/plan": {
         parameters: {
             query?: never;
@@ -174,6 +191,19 @@ export interface components {
          * @enum {string}
          */
         Band: "good" | "satisfactory" | "moderate" | "poor" | "very_poor" | "severe";
+        /** CityOut */
+        CityOut: {
+            /** Name */
+            name: string;
+            /** State */
+            state: string;
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+            /** Has Metro */
+            has_metro: boolean;
+        };
         /** Commute */
         Commute: {
             mode: components["schemas"]["CommuteMode"];
@@ -458,6 +488,26 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+        };
+    };
+    cities_api_cities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CityOut"][];
                 };
             };
         };

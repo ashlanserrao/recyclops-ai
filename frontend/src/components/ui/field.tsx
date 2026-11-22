@@ -9,7 +9,22 @@ export const Input = ({ className, ...props }: ComponentProps<"input">) => (
   <input className={cn(control, className)} {...props} />
 );
 
-export const Select = ({ className, ...props }: ComponentProps<"select">) => (
+/** A number box whose empty state is NaN, so "blank" and "0" stay different. */
+export const NumberInput = ({ value, onValueChange, ...props }:
+  Omit<ComponentProps<"input">, "value" | "onChange" | "type"> & { value: number | null | undefined; onValueChange: (value: number) => void }) => (
+  <Input type="number" inputMode="decimal" value={value == null || Number.isNaN(value) ? "" : value}
+    onChange={(event) => onValueChange(event.target.valueAsNumber)} {...props} />
+);
+
+/** A checkbox with its label as one 44 px tall target. */
+export const Checkbox = ({ label, className, ...props }: Omit<ComponentProps<"input">, "type"> & { label: ReactNode }) => (
+  <label className={cn("flex min-h-11 cursor-pointer items-center gap-3 text-sm", className)}>
+    <input type="checkbox" className="size-5 shrink-0 accent-primary" {...props} />
+    {label}
+  </label>
+);
+
+export const Select =({ className, ...props }: ComponentProps<"select">) => (
   <select className={cn(control, "pr-8", className)} {...props} />
 );
 

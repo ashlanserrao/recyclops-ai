@@ -22,11 +22,16 @@ def error_response(status: int, message: str, fields: list[dict[str, str]] | Non
 
 def _field_errors(errors: Any) -> list[dict[str, str]]:
     """Field path and pydantic's message for each problem; the submitted value is dropped."""
-    fields = []
+    found = []
     for error in errors:
-        location = [str(part) for part in error.get("loc", ()) if part not in ("body", "query")]
-        fields.append({"field": ".".join(location) or "request", "message": str(error.get("msg", "Invalid value"))})
-    return fields
+        location = tuple(str(part) for part in error.get("loc", ()) if part not in ("body", "query"))
+        # Our own validators' messages are written for people; pydantic prefixes them with "Value error, ".
+        found.append((location, str(error.get("msg", "Invalid value")).removeprefix("Value error, ")))
+    # A failed member leaves the members list one short, and pydantic reports that too. The member's own
+    # error already explains it, so an error on a field that contains another error is dropped.
+    return [{"field": ".".join(location) or "request", "message": message}
+            for location, message in found
+            if not any(other[:len(location)] == location and other != location for other, _ in found)]
 
 
 def add_error_handlers(app: FastAPI) -> None:

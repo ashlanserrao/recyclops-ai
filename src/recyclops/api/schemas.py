@@ -60,6 +60,18 @@ class AskRequest(_In):
         return self
 
 
+class CityOut(BaseModel):
+    name: str
+    state: str
+    lat: float
+    lon: float
+    has_metro: bool
+
+    @classmethod
+    def of(cls, city: City) -> "CityOut":
+        return cls(name=city.name, state=city.state, lat=city.lat, lon=city.lon, has_metro=city.has_metro)
+
+
 class StationOut(BaseModel):
     name: str
     distance_km: float

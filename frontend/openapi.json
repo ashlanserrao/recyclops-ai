@@ -27,6 +27,28 @@
         }
       }
     },
+    "/api/cities": {
+      "get": {
+        "summary": "Cities",
+        "operationId": "cities_api_cities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CityOut"
+                  },
+                  "type": "array",
+                  "title": "Response Cities Api Cities Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/plan": {
       "post": {
         "summary": "Plan",
@@ -448,6 +470,39 @@
           "severe"
         ],
         "title": "Band"
+      },
+      "CityOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lon": {
+            "type": "number",
+            "title": "Lon"
+          },
+          "has_metro": {
+            "type": "boolean",
+            "title": "Has Metro"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "state",
+          "lat",
+          "lon",
+          "has_metro"
+        ],
+        "title": "CityOut"
       },
       "Commute": {
         "properties": {

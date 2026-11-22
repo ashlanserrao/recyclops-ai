@@ -1,8 +1,26 @@
 import { Wind } from "lucide-react";
+import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SetupPanel } from "@/features/setup/setup-panel";
+import type { FieldError } from "@/lib/api/types";
+import { membersLine, type Profile } from "@/lib/household";
+import { loadProfile, saveProfile } from "@/lib/storage/profile";
 
-/** The page shell: skip link, header, the planner (built section by section), and the data sources. */
+const NO_ERRORS: FieldError[] = [];
+
+/** The page shell:skip link, header, the planner (built section by section), and the data sources. */
 export default function App() {
+  const [profile, setProfile] = useState<Profile | null>(loadProfile);
+  const [editing, setEditing] = useState(profile === null);
+  const [announcement, setAnnouncement] = useState("");
+
+  const save = (next: Profile) => {
+    saveProfile(next);
+    setProfile(next);
+    setEditing(false);
+    setAnnouncement(`Household saved: ${membersLine(next.household)}.`);
+  };
+
   return (
     <>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-surface focus:px-4 focus:py-2">
@@ -20,11 +38,15 @@ export default function App() {
       </header>
       <main id="main" className="mx-auto max-w-5xl space-y-6 px-4 py-6">
         <h1 className="text-2xl">Plan your household's day around the air</h1>
+        <SetupPanel profile={profile} editing={editing} serverErrors={NO_ERRORS}
+          onEdit={() => setEditing(true)} onSave={save} onCancel={() => setEditing(false)} />
       </main>
       <footer className="mx-auto max-w-5xl px-4 pb-8 text-xs text-muted-foreground">
         Air data: monitoring stations via OpenAQ (CPCB network) and the Open-Meteo forecast (CAMS).
         Advice is computed by fixed rules from that data; the AI only words it.
       </footer>
+      {/* One polite announcer for results that appear without a page change. */}
+      <p role="status" aria-live="polite" className="sr-only">{announcement}</p>
     </>
   );
 }

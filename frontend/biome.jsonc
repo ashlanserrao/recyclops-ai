@@ -1,0 +1,48 @@
+// Lint only (npm run lint). Biome parses TypeScript itself, so it works with TypeScript 7.
+// The formatter stays off: no reformatting.
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": { "includes": ["src/**", "e2e/**", "*.ts"] },
+  "formatter": { "enabled": false },
+  "assist": { "enabled": false },
+  "css": { "parser": { "tailwindDirectives": true } },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        // tsc's verbatimModuleSyntax already requires `import type` where it matters.
+        "useImportType": "off",
+        // Used where the value is known to exist, e.g. the #root element in index.html.
+        "noNonNullAssertion": "off"
+      }
+    }
+  },
+  "overrides": [
+    // Layers: imports only point down, features → components → lib. Outside its own folder a file
+    // imports through "@/", so a relative path can't step around the layer rules. Each layer repeats
+    // the "../" pattern because an override's options replace earlier ones rather than adding to them.
+    {
+      "includes": ["src/**"],
+      "linter": { "rules": { "style": { "noRestrictedImports": { "level": "error", "options": { "patterns": [
+        { "group": ["../**"], "message": "Import from outside this folder through \"@/\"." }
+      ] } } } } }
+    },
+    {
+      "includes": ["src/lib/**"],
+      "linter": { "rules": { "style": { "noRestrictedImports": { "level": "error", "options": { "patterns": [
+        { "group": ["../**"], "message": "Import from outside this folder through \"@/\"." },
+        { "group": ["@/components/**", "@/features/**", "@/App"],
+          "message": "lib/ is the bottom layer: it imports nothing from the UI above it." }
+      ] } } } } }
+    },
+    {
+      "includes": ["src/components/**"],
+      "linter": { "rules": { "style": { "noRestrictedImports": { "level": "error", "options": { "patterns": [
+        { "group": ["../**"], "message": "Import from outside this folder through \"@/\"." },
+        { "group": ["@/features/**", "@/App"],
+          "message": "Shared components are used by features, so they can't import from a feature." }
+      ] } } } } }
+    }
+  ]
+}

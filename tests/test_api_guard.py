@@ -1,5 +1,8 @@
 """The request guard and error format: what every route gets for free."""
 
+import json
+from pathlib import Path
+
 import httpx
 import pytest
 from fastapi.testclient import TestClient
@@ -17,6 +20,13 @@ def test_health_has_security_headers(client: TestClient) -> None:
     for name, value in SECURITY_HEADERS.items():
         assert response.headers[name] == value
     assert "strict-transport-security" not in response.headers  # plain HTTP
+
+
+def test_vercel_sends_the_same_security_headers() -> None:
+    """The deployed site is served by Vercel, not FastAPI: its headers must not drift from ours."""
+    config = json.loads((Path(__file__).resolve().parents[1] / "frontend" / "vercel.json").read_text("utf-8"))
+    site_rule = next(rule for rule in config["headers"] if rule["source"] == "/(.*)")
+    assert {h["key"]: h["value"] for h in site_rule["headers"]} == SECURITY_HEADERS
 
 
 def test_hsts_only_over_https() -> None:

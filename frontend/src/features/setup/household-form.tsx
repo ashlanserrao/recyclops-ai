@@ -8,7 +8,7 @@ import { Checkbox, NumberInput, Select } from "@/components/ui/field";
 import type { FieldError, Household, Member } from "@/lib/api/types";
 import { errorMap, MAX_MEMBERS, missingFields, newHousehold, newMember, type Place, type Profile } from "@/lib/household";
 import { COOKING_FUELS, options } from "@/lib/labels";
-import { type Errors, FormField, focusField } from "@/features/setup/form-field";
+import { type Errors, FormField, focusField } from "@/components/form-field";
 import { LocationField } from "@/features/setup/location-field";
 import { MemberFields } from "@/features/setup/member-fields";
 

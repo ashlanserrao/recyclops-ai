@@ -1,6 +1,7 @@
 import { Wind } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AskPanel } from "@/features/ask/ask-panel";
 import { PlanSection } from "@/features/plan/plan-section";
 import { type PlanState, usePlan } from "@/features/plan/use-plan";
 import { SetupPanel } from "@/features/setup/setup-panel";
@@ -57,6 +58,7 @@ export default function App() {
           onEdit={() => setEditing(true)} onSave={save}
           onCancel={fieldErrors === NO_ERRORS ? () => setEditing(false) : undefined} />
         {!formOpen && <PlanSection state={state} onRefresh={refresh} />}
+        {!formOpen && profile && <AskPanel profile={profile} />}
       </main>
       <footer className="mx-auto max-w-5xl px-4 pb-8 text-xs text-muted-foreground">
         Air data: monitoring stations via OpenAQ (CPCB network) and the Open-Meteo forecast (CAMS).

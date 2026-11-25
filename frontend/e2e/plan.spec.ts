@@ -1,11 +1,5 @@
-import { readFileSync } from "node:fs";
-import { expect, type Page, test } from "@playwright/test";
-
-// The backend's real response for the Delhi household (tests/test_plan_api.py keeps this file in sync).
-const DELHI_PLAN = JSON.parse(readFileSync(new URL("./fixtures/plan-delhi.json", import.meta.url), "utf-8"));
-
-const servePlan = (page: Page, plan: object) =>
-  page.route("**/api/plan", (route) => route.fulfill({ json: plan }));
+import { expect, test } from "@playwright/test";
+import { DELHI_PLAN, servePlan } from "./stubs";
 
 test("the Delhi example shows the measured AQI and each person's advice", async ({ page }) => {
   await servePlan(page, DELHI_PLAN);

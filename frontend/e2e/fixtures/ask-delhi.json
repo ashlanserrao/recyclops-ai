@@ -1,0 +1,142 @@
+{
+  "by_ai": {
+    "air": {
+      "status": "live",
+      "station": {
+        "name": "ITO, Delhi - CPCB",
+        "distance_km": 2.3
+      },
+      "aqi": {
+        "value": 354,
+        "band": "very_poor",
+        "prominent": "pm25",
+        "method": "NAQI method, PM-based (24-hour averages of PM2.5 and PM10)"
+      },
+      "pm25_24h": 190.0,
+      "pm10_24h": 320.0,
+      "measured_at": "2026-11-25T12:00:00+05:30",
+      "source": "OpenAQ (data: CPCB)",
+      "forecast_source": "Open-Meteo (CAMS)",
+      "forecast_corrected": false
+    },
+    "needs_form": false,
+    "ai_used": true,
+    "asked": {
+      "member_id": "aarav",
+      "name": "Aarav",
+      "day": "2026-11-25",
+      "activity": {
+        "kind": "sport",
+        "start": "18:00:00",
+        "duration_min": 60,
+        "intensity": "high"
+      }
+    },
+    "verdict": "better_time",
+    "decision": {
+      "activity": {
+        "kind": "sport",
+        "start": "18:00:00",
+        "duration_min": 60,
+        "intensity": "high"
+      },
+      "action": "move",
+      "band_now": "very_poor",
+      "new_start": "2026-11-25T13:00:00+05:30",
+      "new_duration_min": 30,
+      "mask": "none",
+      "exposure_cut_pct": 77,
+      "reasons": [
+        "sensitive_child",
+        "light_only",
+        "cleaner_window",
+        "avoid_main_road"
+      ],
+      "why": "The air will be very poor at the planned time. The cleanest part of the day is poor, so moving the sport there means breathing cleaner air. This matters because children breathe in more air for their size than adults do. Keep it gentle, so less air is breathed in. Stay away from busy roads, where the air is dirtier than at the monitoring station.",
+      "impact": "1 pm to 1:30 pm, 30 minutes: about 77% less PM2.5 breathed in."
+    }
+  },
+  "needs_form": {
+    "air": {
+      "status": "live",
+      "station": {
+        "name": "ITO, Delhi - CPCB",
+        "distance_km": 2.3
+      },
+      "aqi": {
+        "value": 354,
+        "band": "very_poor",
+        "prominent": "pm25",
+        "method": "NAQI method, PM-based (24-hour averages of PM2.5 and PM10)"
+      },
+      "pm25_24h": 190.0,
+      "pm10_24h": 320.0,
+      "measured_at": "2026-11-25T12:00:00+05:30",
+      "source": "OpenAQ (data: CPCB)",
+      "forecast_source": "Open-Meteo (CAMS)",
+      "forecast_corrected": false
+    },
+    "needs_form": true,
+    "ai_used": false,
+    "asked": null,
+    "verdict": null,
+    "decision": null
+  },
+  "by_form": {
+    "air": {
+      "status": "live",
+      "station": {
+        "name": "ITO, Delhi - CPCB",
+        "distance_km": 2.3
+      },
+      "aqi": {
+        "value": 354,
+        "band": "very_poor",
+        "prominent": "pm25",
+        "method": "NAQI method, PM-based (24-hour averages of PM2.5 and PM10)"
+      },
+      "pm25_24h": 190.0,
+      "pm10_24h": 320.0,
+      "measured_at": "2026-11-25T12:00:00+05:30",
+      "source": "OpenAQ (data: CPCB)",
+      "forecast_source": "Open-Meteo (CAMS)",
+      "forecast_corrected": false
+    },
+    "needs_form": false,
+    "ai_used": false,
+    "asked": {
+      "member_id": "aarav",
+      "name": "Aarav",
+      "day": "2026-11-25",
+      "activity": {
+        "kind": "sport",
+        "start": "18:00:00",
+        "duration_min": 60,
+        "intensity": "high"
+      }
+    },
+    "verdict": "better_time",
+    "decision": {
+      "activity": {
+        "kind": "sport",
+        "start": "18:00:00",
+        "duration_min": 60,
+        "intensity": "high"
+      },
+      "action": "move",
+      "band_now": "very_poor",
+      "new_start": "2026-11-25T13:00:00+05:30",
+      "new_duration_min": 30,
+      "mask": "none",
+      "exposure_cut_pct": 77,
+      "reasons": [
+        "sensitive_child",
+        "light_only",
+        "cleaner_window",
+        "avoid_main_road"
+      ],
+      "why": "The air will be very poor at the planned time. The cleanest part of the day is poor, so moving the sport there means breathing cleaner air. This matters because children breathe in more air for their size than adults do. Keep it gentle, so less air is breathed in. Stay away from busy roads, where the air is dirtier than at the monitoring station.",
+      "impact": "1 pm to 1:30 pm, 30 minutes: about 77% less PM2.5 breathed in."
+    }
+  }
+}

@@ -1,10 +1,7 @@
 """POST /api/plan end to end with a fake air provider (spec G1, V3, V13, E1)."""
 
-import json
-import os
 from collections.abc import Iterator
 from datetime import time
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -16,10 +13,10 @@ from recyclops.data.models import AirSnapshot, DataStatus, Station, StationReadi
 from recyclops.domain.aqi import Average
 from recyclops.domain.cities import nearest_city
 from recyclops.domain.forecast import Forecast, at
+from tests.frontend_fixtures import assert_matches_fixture
 from tests.golden import DAY, G1_FORECAST, G1_HOUSEHOLD
 
 DELHI = {"lat": 28.6139, "lon": 77.2090}
-PLAN_FIXTURE = Path(__file__).parents[1] / "frontend" / "e2e" / "fixtures" / "plan-delhi.json"
 G1_READING = StationReading(
     station=Station(id="delhi-1", name="ITO, Delhi - CPCB", distance_km=2.34),
     measured_at=at(DAY, time(12)), pm25_24h=Average(190, 24), pm10_24h=Average(320, 24), pm25_latest=150,
@@ -74,14 +71,7 @@ def test_g1_delhi_plan(plan_client: TestClient) -> None:
 
 
 def test_frontend_fixture_is_the_real_g1_plan(plan_client: TestClient) -> None:
-    """The browser tests show this exact response, so they can't drift from what the API sends.
-
-    After an intended change to the plan's shape or wording: UPDATE_FIXTURES=1 pytest, then review the diff.
-    """
-    plan = plan_client.post("/api/plan", json=body()).json()
-    if os.environ.get("UPDATE_FIXTURES"):
-        PLAN_FIXTURE.write_text(json.dumps(plan, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    assert json.loads(PLAN_FIXTURE.read_text(encoding="utf-8")) == plan
+    assert_matches_fixture("plan-delhi.json", plan_client.post("/api/plan", json=body()).json())
 
 
 def test_no_station_nearby_shows_no_aqi(client: TestClient) -> None:

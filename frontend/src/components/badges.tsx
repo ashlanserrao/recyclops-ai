@@ -26,12 +26,13 @@ export function BandBadge({ band, className }: { band: Band; className?: string 
   );
 }
 
-// Where a piece of information comes from: measured, modelled, rules, or AI wording.
+// Where a piece of information comes from: measured, modelled, rules, AI wording, or a question the AI read.
 const SOURCES = {
   measured: { label: "Measured", icon: Gauge, className: "border-success/30 bg-success-soft text-success" },
   forecast: { label: "Forecast", icon: TrendingUp, className: "border-warning/30 bg-warning-soft text-warning" },
   rules: { label: "Rule-based", icon: Cpu, className: "border-border bg-surface-soft text-muted-foreground" },
   ai: { label: "AI-worded", icon: Sparkles, className: "border-ai-border bg-ai-tint text-ai" },
+  aiRead: { label: "Read by AI", icon: Sparkles, className: "border-ai-border bg-ai-tint text-ai" },
 } as const;
 
 export function SourceBadge({ source }: { source: keyof typeof SOURCES }) {

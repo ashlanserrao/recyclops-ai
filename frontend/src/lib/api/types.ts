@@ -8,6 +8,7 @@ export type Activity = Schemas["Activity"];
 export type ActivityKind = Schemas["ActivityKind"];
 export type AirOut = Schemas["AirOut"];
 export type Alternative = Schemas["Alternative"];
+export type AskForm = Schemas["AskForm"];
 export type AskOut = Schemas["AskOut"];
 export type AskRequest = Schemas["AskRequest"];
 export type Band = Schemas["Band"];

@@ -2,6 +2,7 @@
 
 import type {
   Activity, ActivityKind, Alternative, CommuteMode, CookingFuel, DecisionOut, HealthFlag, HomeAction, Intensity, MemberType,
+  Verdict,
 } from "@/lib/api/types";
 import { clock, clockTime } from "@/lib/format";
 
@@ -85,6 +86,15 @@ export function decisionHeadline(decision: DecisionOut): { text: string; tone: T
       return { text: "No forecast for this time yet", tone: "neutral" };
   }
 }
+
+/** The answer to "Can we...?", in a few words. */
+export const VERDICTS: Record<Verdict, { text: string; tone: Tone }> = {
+  yes: { text: "Yes, go ahead", tone: "success" },
+  better_time: { text: "Better at another time", tone: "warning" },
+  shorter: { text: "Yes, but keep it shorter", tone: "warning" },
+  indoors: { text: "Better indoors today", tone: "danger" },
+  unknown: { text: "Can't say yet", tone: "neutral" },
+};
 
 /** "Outdoor play at 5 pm, 60 min": the activity as the person entered it. */
 export const activityLine = ({ kind, start, duration_min }: Activity) =>

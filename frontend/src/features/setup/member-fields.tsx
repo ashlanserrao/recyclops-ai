@@ -6,7 +6,7 @@ import { Checkbox, Input, NumberInput, Select } from "@/components/ui/field";
 import type { Activity, Commute, CommuteMode, HealthFlag, Member } from "@/lib/api/types";
 import { MAX_ACTIVITIES, newActivity, newCommute } from "@/lib/household";
 import { ACTIVITY_KINDS, COMMUTE_MODES, HEALTH_FLAGS, INTENSITIES, MEMBER_TYPES, options } from "@/lib/labels";
-import { type Errors, FormField } from "@/features/setup/form-field";
+import { type Errors, FormField } from "@/components/form-field";
 
 // Walking to and from stops only applies when someone else does the driving.
 const HAS_WALKING_LEG: ReadonlySet<CommuteMode> = new Set(["bus", "metro"]);

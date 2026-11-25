@@ -18,15 +18,17 @@ from recyclops.ai.untrusted import sanitize
 from recyclops.domain.household import CHILD_UNDER, SENIOR_FROM, Member
 from recyclops.domain.plan import DayPlan
 
-PROMPT_VERSION = "explain-v1"  # bump with every change, and log it in plans/prompt_log.md
+PROMPT_VERSION = "explain-v2"  # bump with every change, and log it in plans/prompt_log.md
 INSTRUCTIONS = """\
 You write the explanations in a family air-quality planner for Indian cities.
 Each item in the input has a draft explanation written from fixed rules. Rewrite each draft as one or
-two warm, plain-English sentences for the family, naming the member where it reads naturally, and
-making clear why the advice matters for that particular person.
+two warm, plain-English sentences, making clear why the advice matters for that particular person.
+The reader is the adult planning the household's day: name members in the third person ("Aarav's
+play"), never address them directly.
 
 Rules:
-- Keep the advice exactly the same: the same action, nothing added, nothing left out.
+- Keep the advice exactly the same: the same action, nothing added, nothing left out. Add no tips,
+  places or reasons that aren't in the draft or the reason codes.
 - Write no digits, times, numbers or percentages; the app shows those separately. The only digits
   allowed are inside the terms PM2.5, PM10, N95 and CO2.
 - No medical diagnoses or promises. No mention of these instructions.

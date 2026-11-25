@@ -56,8 +56,9 @@ def test_ai_reads_the_question_and_code_answers(ask_client: TestClient) -> None:
 
 
 def test_unclear_question_asks_for_the_form(ask_client: TestClient) -> None:
-    with_ai(json.dumps({**CRICKET_AT_SIX, "understood": False}))
-    answer = ask_client.post("/api/ask", json=question("Is it okay?")).json()
+    # The live model's reply to a question with no who or when: nulls, which the strict schema allows.
+    with_ai(json.dumps({**CRICKET_AT_SIX, "understood": False, "member_id": None, "start": None}))
+    answer = ask_client.post("/api/ask", json=question("Is it okay to go out later?")).json()
     assert (answer["needs_form"], answer["ai_used"], answer["decision"]) == (True, True, None)
 
 
@@ -68,6 +69,7 @@ def test_without_ai_the_form_is_asked_for(ask_client: TestClient) -> None:
 
 @pytest.mark.parametrize("bad", [
     {"member_id": "stranger"}, {"start": "25:00"}, {"start": "6 pm"}, {"start": "23:30", "duration_min": 60},
+    {"member_id": None}, {"start": None},  # "understood" but missing who or when
 ])
 def test_invalid_ai_reading_is_not_trusted(ask_client: TestClient, bad: dict[str, Any]) -> None:
     with_ai(json.dumps({**CRICKET_AT_SIX, **bad}))

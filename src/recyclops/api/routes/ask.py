@@ -10,7 +10,6 @@ from recyclops.api.dependencies import get_air_provider, get_question_reader, to
 from recyclops.api.schemas import VERDICTS, AirOut, AskedOut, AskOut, AskRequest, DecisionOut
 from recyclops.data.models import AirProvider
 from recyclops.domain.forecast import day_windows
-from recyclops.domain.household import Activity
 from recyclops.domain.plan import decide
 
 router = APIRouter()
@@ -31,11 +30,9 @@ async def ask(
         member_id, day_word, activity, ai_used = request.form.member_id, request.form.day, request.form.activity, False
     else:
         parse = await reader.read(request.question or "", household)
-        if parse is None or not parse.understood:
+        if parse is None or (asked := parse.asked()) is None:
             return AskOut(air=air, needs_form=True, ai_used=parse is not None)
-        member_id, day_word, ai_used = parse.member_id, parse.day, True
-        activity = Activity(kind=parse.activity, start=parse.start_time, duration_min=parse.duration_min,
-                            intensity=parse.intensity)
+        (member_id, activity), day_word, ai_used = asked, parse.day, True
 
     member = next(m for m in household.members if m.id == member_id)
     day = today + timedelta(days=1 if day_word == "tomorrow" else 0)

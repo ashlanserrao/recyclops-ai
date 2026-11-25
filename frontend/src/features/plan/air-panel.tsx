@@ -96,6 +96,7 @@ function Forecast({ plan }: { plan: PlanOut }) {
           <p className="text-xs text-muted-foreground">
             {windows.note} {air.forecast_source}, {air.forecast_corrected
               ? "scaled to match the station's measured level." : "as modelled (no station reading to adjust it to)."}
+            {" "}The AQI is a 24-hour average; each activity's advice uses the forecast for its own hour.
           </p>
         </>
       ) : (

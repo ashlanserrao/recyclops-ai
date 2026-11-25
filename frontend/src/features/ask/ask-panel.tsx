@@ -5,7 +5,7 @@ import { MessageCircleQuestion } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { SourceBadge } from "@/components/badges";
 import { DecisionCard, ToneChip } from "@/components/decision";
-import { type Errors, FormField, focusField } from "@/components/form-field";
+import { type Errors, FormField, useFocusField } from "@/components/form-field";
 import { Panel } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
@@ -35,18 +35,19 @@ export function AskPanel({ profile }: { profile: Profile }) {
   const [state, setState] = useState<AskState>({ status: "idle" });
   const inFlight = useRef<AbortController | null>(null);
   useEffect(() => () => inFlight.current?.abort(), []);
+  const focus = useFocusField();
 
   const showErrors = (fields: FieldError[]) => {
     setErrors(errorMap(fields));
     const first = fields[0];
-    if (first) requestAnimationFrame(() => focusField(first.field));
+    if (first) focus(first.field);
   };
 
   const switchToForm = (why: string | null) => {
     setMode("form");
     setNotice(why);
     setErrors({});
-    requestAnimationFrame(() => focusField("form.member_id"));
+    focus("form.member_id");
   };
 
   const send = async (body: { question: string } | { form: AskForm }) => {

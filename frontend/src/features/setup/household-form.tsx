@@ -2,21 +2,15 @@
 // and its field errors (passed in as serverErrors) land on the same inputs.
 
 import { Plus } from "lucide-react";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox, NumberInput, Select } from "@/components/ui/field";
 import type { FieldError, Household, Member } from "@/lib/api/types";
 import { errorMap, MAX_MEMBERS, missingFields, newHousehold, newMember, type Place, type Profile } from "@/lib/household";
 import { COOKING_FUELS, options } from "@/lib/labels";
-import { type Errors, FormField, focusField } from "@/components/form-field";
+import { type Errors, FormField, useFocusField } from "@/components/form-field";
 import { LocationField } from "@/features/setup/location-field";
 import { MemberFields } from "@/features/setup/member-fields";
-
-/** Focus the first problem after React has rendered the messages, so it's announced with its error. */
-function focusFirst(fields: FieldError[]) {
-  const first = fields[0];
-  if (first) requestAnimationFrame(() => focusField(first.field));
-}
 
 export function HouseholdForm({ initial, serverErrors, onSave, onCancel }: {
   initial: Profile | null; serverErrors: FieldError[]; onSave: (profile: Profile) => void; onCancel?: () => void;
@@ -24,17 +18,17 @@ export function HouseholdForm({ initial, serverErrors, onSave, onCancel }: {
   const [place, setPlace] = useState<Place | null>(initial?.place ?? null);
   const [household, setHousehold] = useState<Household>(initial?.household ?? newHousehold);
   const [errors, setErrors] = useState<Errors>({});
+  const focus = useFocusField();
 
-  const showErrors = (fields: FieldError[]) => {
+  // The first problem is focused once its message is drawn, so it's announced with its error.
+  const showErrors = useCallback((fields: FieldError[]) => {
     setErrors(errorMap(fields));
-    focusFirst(fields);
-  };
+    if (fields[0]) focus(fields[0].field);
+  }, [focus]);
 
   useEffect(() => {
-    if (!serverErrors.length) return;
-    setErrors(errorMap(serverErrors));
-    focusFirst(serverErrors);
-  }, [serverErrors]);
+    if (serverErrors.length) showErrors(serverErrors);
+  }, [serverErrors, showErrors]);
 
   const { home, members } = household;
   const setHome = (patch: Partial<Household["home"]>) => setHousehold({ ...household, home: { ...home, ...patch } });

@@ -51,8 +51,10 @@ export function LocationField({ place, error, onChange }: {
   return (
     <Field id={ID} label="City" error={shown} hint={hint}>
       <div className="flex flex-wrap gap-2">
+        {/* Never disabled while the list loads: a disabled control can't take focus, and an error may need to point here. */}
         <Select id={ID} className="min-w-48 flex-1" value={place?.source === "city" ? (place.name ?? "") : ""}
-          onChange={(event) => chooseCity(event.target.value)} disabled={!cities} {...describedBy(ID, shown, hint !== undefined)}>
+          onChange={(event) => chooseCity(event.target.value)} aria-busy={!cities && !listFailed}
+          {...describedBy(ID, shown, hint !== undefined)}>
           <option value="" disabled>{cities ? "Choose a city" : "Loading cities…"}</option>
           {/* A demo's city is shown even before the list arrives. */}
           {!cities && place?.source === "city" && <option value={place.name ?? ""}>{place.name}</option>}

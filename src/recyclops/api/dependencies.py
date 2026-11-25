@@ -13,18 +13,19 @@ from recyclops.data.models import AirProvider, NotConfiguredProvider
 from recyclops.data.open_meteo import OpenMeteo
 from recyclops.data.openaq import OpenAQ
 
+# One pooled client for both air sources, so repeat calls reuse their connections; closed on shutdown.
+http_client = httpx.AsyncClient(headers={"User-Agent": "recyclops-ai"})
 
-def live_air_provider(config: Settings) -> AirProvider:
+
+def live_air_provider(config: Settings, client: httpx.AsyncClient) -> AirProvider:
     """Live data when the OpenAQ key is set; otherwise every plan says live data isn't available."""
     if not config.openaq_api_key:
         return NotConfiguredProvider()
-    # One pooled client for both sources, so repeat calls reuse their connections.
-    client = httpx.AsyncClient(headers={"User-Agent": "recyclops-ai"})
     return LiveAirProvider(OpenAQ(client, config.openaq_api_key), OpenMeteo(client))
 
 
 # One provider for the app: its caches and last good readings are shared by every request.
-_air_provider = live_air_provider(settings)
+_air_provider = live_air_provider(settings, http_client)
 # One chain for the app: its cache, hourly cap and 429 cooldowns are shared by every request.
 ai = StructuredAI(settings)
 _explainer = PlanExplainer(ai)

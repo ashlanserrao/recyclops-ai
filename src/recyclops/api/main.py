@@ -4,11 +4,14 @@ Run with: uvicorn recyclops.api.main:app
 """
 
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 
+from recyclops.api import dependencies
 from recyclops.api.errors import add_error_handlers
 from recyclops.api.middleware import guard_requests
 from recyclops.api.routes import ask, cities, health, plan
@@ -22,7 +25,13 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 # where Vercel serves the site. Found from this file's place in the repo, so it needs the editable install.
 FRONTEND_DIR = Path(__file__).resolve().parents[3] / "frontend" / "dist"
 
-app = FastAPI(title="recyclops-ai", docs_url=None, redoc_url=None, openapi_url=None)
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    yield
+    await dependencies.http_client.aclose()  # the air sources' pooled connections
+
+
+app = FastAPI(title="recyclops-ai", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
 app.middleware("http")(guard_requests)
 # Added last so it wraps the guard: every response leaves compressed with the guard's headers kept.
 app.add_middleware(GZipMiddleware, minimum_size=1000)

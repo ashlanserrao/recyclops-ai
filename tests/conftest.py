@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from recyclops.api import dependencies
 from recyclops.api.limits import RATE_LIMITERS
 from recyclops.api.main import app
+from recyclops.data.models import NotConfiguredProvider
 
 
 class NetworkBlockedError(RuntimeError):
@@ -47,6 +48,12 @@ def no_real_ai(monkeypatch: pytest.MonkeyPatch) -> None:
     """The app's AI chain has no providers in tests, even with keys in .env: templates answer."""
     monkeypatch.setattr(dependencies.ai, "providers", [])
     dependencies.ai._cache.clear()
+
+
+@pytest.fixture(autouse=True)
+def no_live_air(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The app has no live air source in tests, even with an OpenAQ key in .env: tests fake it per case."""
+    monkeypatch.setattr(dependencies, "_air_provider", NotConfiguredProvider())
 
 
 @pytest.fixture

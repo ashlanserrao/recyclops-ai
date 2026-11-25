@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 
-from recyclops.data.models import LiveDataNotConfiguredError
+from recyclops.data.models import LiveDataUnavailableError
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +41,8 @@ def add_error_handlers(app: FastAPI) -> None:
         logger.warning("Rejected %s: %s", request.url.path, "; ".join(f"{f['field']}: {f['message']}" for f in fields))
         return error_response(422, "Please check the highlighted fields.", fields)
 
-    @app.exception_handler(LiveDataNotConfiguredError)
-    async def no_live_data(_: Request, __: LiveDataNotConfiguredError) -> JSONResponse:
+    @app.exception_handler(LiveDataUnavailableError)
+    async def no_live_data(_: Request, __: LiveDataUnavailableError) -> JSONResponse:
         return error_response(503, "Live air-quality data isn't available right now. Please try again later.")
 
     @app.exception_handler(HTTPException)

@@ -50,8 +50,12 @@ class AirProvider(Protocol):
     async def snapshot(self, lat: float, lon: float) -> AirSnapshot: ...
 
 
-class LiveDataNotConfiguredError(RuntimeError):
-    """No real data source is set up (e.g. no OpenAQ key). The app never falls back to made-up data."""
+class LiveDataUnavailableError(RuntimeError):
+    """There's no forecast to plan from: the source is down and nothing is cached. Never filled with made-up data."""
+
+
+class LiveDataNotConfiguredError(LiveDataUnavailableError):
+    """No real data source is set up (no OpenAQ key)."""
 
 
 class NotConfiguredProvider:

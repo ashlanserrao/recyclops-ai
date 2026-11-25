@@ -15,6 +15,8 @@ from recyclops.api.routes import ask, cities, health, plan
 from recyclops.api.static import FrontendFiles
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+# httpx logs each request's URL, which holds the visitor's coordinates: keep only its warnings.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # The React build (cd frontend && npm run build). The API works without it: in tests, and on Render,
 # where Vercel serves the site. Found from this file's place in the repo, so it needs the editable install.

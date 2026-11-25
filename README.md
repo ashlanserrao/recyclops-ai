@@ -152,6 +152,8 @@ worse, but not for a closed car.
 - **Status never by colour alone:** each band and verdict has an icon and a word. Colour contrast is checked in CI
   (92 colour pairs, light and dark, WCAG AA).
 - **Screen readers:** one polite live region announces "Plan ready for Delhi. AQI 304, Very poor." and each answer.
+- **Automated scan:** axe-core checks every screen state against WCAG 2.1 A/AA in CI, in both themes, and finds no
+  violations.
 - **Keyboard:** an end-to-end test walks the whole Tab path and checks every stop has a visible focus ring and is on
   screen.
 - **Touch:** 44 px touch targets, a light, dark or device theme, and layouts down to phone width with no sideways scroll.
@@ -175,7 +177,8 @@ faked.
 |---|---|---|
 | Backend | pytest (156 tests) | NAQI breakpoints and the 16-hour rule. The forecast correction and windows. Each row of the rules table. The impact formulas. The three golden households (Delhi AQI 354 → child moved to 1 pm, 77% less; Mumbai; Kolkata). The live provider against recorded-shape replies: nearest *reporting* station, cache, stale fallback, forecast outage. The AI guards: digits, missing keys, invalid parses, injection. Field errors, limits and headers. |
 | Frontend | Vitest (14) | Household validation and saved-profile checks, formatting, labels |
-| Browser | Playwright (9) | The whole journey: example household → AQI → each person's advice → typed question → reload keeps the household → keyboard Tab path. Also the form fallback, server-side field errors focusing the right input, and the "no live data" alert with retry. |
+| Browser | Playwright (13) | The whole journey: example household → AQI → each person's advice → typed question → reload keeps the household → keyboard Tab path. Also the form fallback, server-side field errors focusing the right input, and the "no live data" alert with retry. |
+| Accessibility | axe-core in Playwright | A WCAG 2.1 A/AA scan of each screen state (setup, its errors, the plan in light and dark, an Ask answer, the Ask form): zero violations required |
 | Static checks | ruff, mypy `--strict`, Biome, TypeScript, colour-contrast script | Run in CI on every push (`.github/workflows/ci.yml`) |
 
 The browser tests use the backend's **real** responses as fixtures. A backend test regenerates them and fails if
